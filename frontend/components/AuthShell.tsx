@@ -1,23 +1,16 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
+import { useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { useMe } from '../lib/hooks'
 
 export default function AuthShell({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { user, loading } = useMe()
 
   useEffect(() => {
-    async function check() {
-      try {
-        const base = process.env.NEXT_PUBLIC_API_BASE_URL || ''
-        await axios.get(base + '/api/auth/me', { withCredentials: true })
-        setLoading(false)
-      } catch (err) {
-        router.push('/login')
-      }
+    if (!loading && !user) {
+      router.push('/login')
     }
-    check()
-  }, [])
+  }, [loading, user])
 
   if (loading) return <div className="p-6">Checking auth...</div>
   return <>{children}</>
