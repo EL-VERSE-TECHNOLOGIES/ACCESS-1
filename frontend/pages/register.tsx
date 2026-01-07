@@ -2,37 +2,37 @@ import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 
-type FormData = { email: string; password: string }
+type FormData = { email: string; username: string; password: string; fullName: string }
 
-export default function Login() {
+export default function Register() {
   const { register, handleSubmit } = useForm<FormData>()
   const router = useRouter()
 
   async function onSubmit(data: FormData) {
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE_URL || ''
-      const res = await axios.post(base + '/api/auth/login', data, { withCredentials: true })
-      const payload = res.data || {}
-      const token = payload.accessToken || payload.token || payload.access_token || null
-      if (token && typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', token)
-      }
-      router.push('/dashboard')
+      await axios.post(base + '/api/auth/register', { ...data, app: 'EL_ACCESS' })
+      alert('Registered — please login')
+      router.push('/login')
     } catch (err: any) {
       console.error(err)
-      alert(err?.response?.data?.message || 'Login failed')
+      alert(err?.response?.data?.message || 'Registration failed')
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md p-6 bg-white rounded shadow">
-        <h2 className="text-xl font-medium mb-4">Login</h2>
+        <h2 className="text-xl font-medium mb-4">Register</h2>
+        <label className="block mb-2">Full name</label>
+        <input {...register('fullName')} className="w-full p-2 border rounded mb-3" />
+        <label className="block mb-2">Username</label>
+        <input {...register('username')} className="w-full p-2 border rounded mb-3" />
         <label className="block mb-2">Email</label>
         <input {...register('email')} className="w-full p-2 border rounded mb-3" />
         <label className="block mb-2">Password</label>
         <input {...register('password')} type="password" className="w-full p-2 border rounded mb-4" />
-        <button className="w-full py-2 bg-blue-600 text-white rounded">Sign in</button>
+        <button className="w-full py-2 bg-blue-600 text-white rounded">Register</button>
       </form>
     </div>
   )
