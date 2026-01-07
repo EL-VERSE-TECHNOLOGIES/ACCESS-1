@@ -1,36 +1,21 @@
-import { useState, useEffect } from 'react'
-import { useSocket } from '../components/SocketProvider'
+import { useState } from 'react'
+import AuthShell from '../components/AuthShell'
+import ChatList from '../components/ChatList'
+import ChatWindow from '../components/ChatWindow'
 
 export default function PeerHelp() {
-  const { socket } = useSocket()
-  const AuthShell = require('../components/AuthShell').default
-  const [messages, setMessages] = useState<any[]>([])
-  const [text, setText] = useState('')
-
-  useEffect(() => {
-    if (!socket) return
-    const handler = (m: any) => setMessages((s) => [...s, m])
-    socket.on('chat:message', handler)
-    return () => { socket.off('chat:message', handler) }
-  }, [socket])
-
-  function send() {
-    if (!text || !socket) return
-    socket.emit('chat:message', { text })
-    setText('')
-  }
+  const [room, setRoom] = useState<string>('public')
 
   return (
     <AuthShell>
       <div className="min-h-screen p-6 bg-gray-50">
-        <div className="max-w-3xl mx-auto bg-white p-4 rounded shadow">
-          <h1 className="text-xl font-semibold mb-3">Peer Help / Chat</h1>
-          <div className="h-64 overflow-auto p-2 border rounded mb-2">
-            {messages.map((m, i) => <div key={i} className="mb-2"><b>{m.sender?.username || 'peer'}:</b> {m.text}</div>)}
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="md:col-span-1">
+            <ChatList onSelect={(r) => setRoom(r)} />
           </div>
-          <div className="flex gap-2">
-            <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 p-2 border rounded" />
-            <button onClick={send} className="px-3 py-2 bg-blue-600 text-white rounded">Send</button>
+          <div className="md:col-span-3 bg-white p-4 rounded shadow">
+            <h1 className="text-xl font-semibold mb-3">Peer Help — {room}</h1>
+            <ChatWindow room={room} />
           </div>
         </div>
       </div>
