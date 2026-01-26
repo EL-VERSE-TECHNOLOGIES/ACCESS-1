@@ -1,6 +1,8 @@
+// lib/api.ts
 import axios from 'axios'
 import { getBackendUrl } from './backend-config'
 
+// Create the API instance with the backend configuration
 export const api = axios.create({
   baseURL: getBackendUrl() + '/api',
   withCredentials: true,

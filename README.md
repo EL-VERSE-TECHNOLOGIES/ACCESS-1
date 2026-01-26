@@ -211,16 +211,66 @@ JWT_SECRET=your-jwt-secret
 
 ## Deployment
 
-### Frontend
+### Local Development
 ```bash
-npm run build
-npm run start  # Production server
+# Frontend
+cd frontend
+npm install
+npm run dev
+
+# Backend (choose one)
+# Python backend
+cd backend_python
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+
+# Go backend
+cd backend_go
+go mod tidy
+go run main.go
+
+# Node.js backend
+cd backend_nest
+npm install
+npm run start:dev
 ```
 
-### Backend (Choose one)
-- Python: Deploy with Gunicorn/uWSGI
-- Go: Compile binary and deploy
-- Node.js: Deploy with PM2 or similar
+### Vercel Deployment (Recommended)
+
+The application is optimized for Vercel deployment:
+
+1. **Prepare your backend services**:
+   - Deploy your Python, Go, or Node.js backend to a hosting service
+   - Make sure your backend is accessible via HTTPS
+
+2. **Set environment variables in Vercel**:
+   ```
+   NEXT_PUBLIC_API_BASE_URL=https://your-backend-domain.com
+   NEXT_PUBLIC_PYTHON_BACKEND_URL=https://your-python-backend.com
+   NEXT_PUBLIC_GO_BACKEND_URL=https://your-go-backend.com
+   NEXT_PUBLIC_NODEJS_BACKEND_URL=https://your-nodejs-backend.com
+   NEXT_PUBLIC_DEFAULT_BACKEND=python
+   NEXT_PUBLIC_WS_URL=wss://your-websocket-domain.com
+   ```
+
+3. **Deploy to Vercel**:
+   - Import your GitHub repository in Vercel
+   - Vercel will automatically detect this as a Next.js project
+   - Set build command to `cd frontend && npm run build`
+   - Add the environment variables in the Vercel dashboard
+   - Deploy!
+
+### Production Deployment
+```bash
+# Frontend
+npm run build
+npm run start  # Production server
+
+# Backend (Choose one)
+# Python: Deploy with Gunicorn/uWSGI
+# Go: Compile binary and deploy
+# Node.js: Deploy with PM2 or similar
+```
 
 ## Testing
 
