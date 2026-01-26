@@ -1,6 +1,5 @@
 import type { AppProps } from 'next/app'
 import '../styles/globals.css'
-import '../styles/animations.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import SocketProvider from '../components/SocketProvider'
