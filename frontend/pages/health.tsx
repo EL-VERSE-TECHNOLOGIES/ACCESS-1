@@ -3,9 +3,6 @@ import api from '../lib/api';
 import { getAvailableBackends, getSelectedBackend } from '../lib/backend-config';
 import Loader from '../components/Loader';
 
-// Check if we're using the mock API
-const isMockApi = typeof (api as any).get === 'function' && !(api as any).defaults;
-
 export default function Health() {
   const [backendStatus, setBackendStatus] = useState<Record<string, { status: string; responseTime: number; error?: string }>>({});
   const [loading, setLoading] = useState(true);
@@ -17,41 +14,25 @@ export default function Health() {
 
   const checkBackend = async (backendType: string, url: string) => {
     const startTime = Date.now();
-
     try {
-      if (isMockApi) {
-        // For mock API, simulate a health check
-        await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
-        const responseTime = Date.now() - startTime;
+      // Temporarily change the API base URL to check this specific backend
+      const originalBaseUrl = (api as any).defaults.baseURL;
+      (api as any).defaults.baseURL = `${url}/api`;
 
-        return {
-          status: 'healthy',
-          responseTime,
-        };
-      } else {
-        // For real API, perform actual health check
-        // Temporarily change the API base URL to check this specific backend
-        const originalBaseUrl = (api as any).defaults.baseURL;
-        (api as any).defaults.baseURL = `${url}/api`;
-
-        const response = await api.get('/health');
-        const responseTime = Date.now() - startTime;
-
-        // Restore original base URL
-        (api as any).defaults.baseURL = originalBaseUrl;
-
-        return {
-          status: response.data?.status || 'unknown',
-          responseTime,
-        };
-      }
-    } catch (error: any) {
+      const response = await api.get('/health');
       const responseTime = Date.now() - startTime;
 
-      if (!isMockApi) {
-        // Restore original base URL if not using mock API
-        (api as any).defaults.baseURL = `${window.location.origin}/api`;
-      }
+      // Restore original base URL
+      (api as any).defaults.baseURL = originalBaseUrl;
+
+      return {
+        status: response.data?.status || 'unknown',
+        responseTime,
+      };
+    } catch (error: any) {
+      const responseTime = Date.now() - startTime;
+      // Restore original base URL
+      (api as any).defaults.baseURL = `${window.location.origin}/api`;
 
       return {
         status: 'error',

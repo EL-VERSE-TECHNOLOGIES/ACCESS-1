@@ -6,31 +6,22 @@ export interface BackendConfig {
   description: string;
 }
 
-// Check if we're in a Vercel deployment environment
-const isVercel = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
-
 export const BACKEND_CONFIGS: Record<string, BackendConfig> = {
   python: {
     name: 'Python (FastAPI)',
-    url: isVercel
-      ? '/api' // Use local API route in Vercel
-      : (process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000'),
+    url: process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000',
     type: 'python',
     description: 'Python backend using FastAPI framework'
   },
   go: {
     name: 'Go (Gin)',
-    url: isVercel
-      ? '/api' // Use local API route in Vercel
-      : (process.env.NEXT_PUBLIC_GO_BACKEND_URL || 'http://localhost:8000'),
+    url: process.env.NEXT_PUBLIC_GO_BACKEND_URL || 'http://localhost:8000',
     type: 'go',
     description: 'Go backend using Gin framework'
   },
   nodejs: {
     name: 'Node.js (NestJS)',
-    url: isVercel
-      ? '/api' // Use local API route in Vercel
-      : (process.env.NEXT_PUBLIC_NODEJS_BACKEND_URL || 'http://localhost:8001'),
+    url: process.env.NEXT_PUBLIC_NODEJS_BACKEND_URL || 'http://localhost:8001',
     type: 'nodejs',
     description: 'Node.js backend using NestJS framework'
   }
