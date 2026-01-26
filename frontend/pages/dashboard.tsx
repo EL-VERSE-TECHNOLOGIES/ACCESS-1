@@ -9,7 +9,17 @@ import UnoAIBubble from '../components/UnoAIBubble'
 import TaskSubmission from '../components/TaskSubmission'
 import Loader from '../components/Loader'
 
-const fetcher = (url: string) => api.get(url).then(r => r.data)
+// Check if we're using the mock API
+const isMockApi = typeof (api as any).get === 'function' && !(api as any).defaults;
+
+const fetcher = async (url: string) => {
+  if (isMockApi) {
+    const result = await (api as any).get(url);
+    return result.data;
+  } else {
+    return api.get(url).then(r => r.data);
+  }
+};
 
 interface Task {
   id: string;
@@ -65,10 +75,17 @@ export default function Dashboard() {
 
   const handleNewSubmission = async (taskId: string, code: string) => {
     try {
-      await api.post(`/access/tasks/${taskId}/submit`, {
-        code,
-        taskId
-      });
+      if (isMockApi) {
+        await (api as any).post(`/access/tasks/${taskId}/submit`, {
+          code,
+          taskId
+        });
+      } else {
+        await api.post(`/access/tasks/${taskId}/submit`, {
+          code,
+          taskId
+        });
+      }
 
       // Refresh the data after submission
       window.location.reload(); // Simple refresh for now

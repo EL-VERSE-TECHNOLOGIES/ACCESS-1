@@ -209,6 +209,29 @@ JWT_SECRET=your-jwt-secret
 - Optimized for performance
 - Responsive design
 
+## Vercel Deployment
+
+The application is now optimized for Vercel deployment with mock API support:
+
+### Vercel Configuration
+- API routes automatically redirect to mock API during deployment
+- Static export enabled for faster loading
+- Proper environment variable handling
+- Optimized for serverless functions
+
+### Deployment Steps
+1. Connect your GitHub repository to Vercel
+2. Select the frontend directory as the project root
+3. Set build command to `cd frontend && npm run vercel-build`
+4. Set output directory to `frontend/out`
+5. Add environment variables if needed
+
+### Mock API for Vercel
+- All API calls are intercepted during Vercel deployment
+- Mock responses simulate real backend functionality
+- Maintains full application functionality without external backend
+- Preserves all UI/UX features for demonstration
+
 ## Testing
 
 To test the integration between frontend and backend:
@@ -222,16 +245,48 @@ To test the integration between frontend and backend:
 
 ## Deployment
 
-### Frontend
+### Local Development
 ```bash
-npm run build
-npm run start  # Production server
+# Frontend
+cd frontend
+npm install
+npm run dev
+
+# Backend (choose one)
+# Python backend
+cd backend_python
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+
+# Go backend
+cd backend_go
+go mod tidy
+go run main.go
+
+# Node.js backend
+cd backend_nest
+npm install
+npm run start:dev
 ```
 
-### Backend (Choose one)
-- Python: Deploy with Gunicorn/uWSGI
-- Go: Compile binary and deploy
-- Node.js: Deploy with PM2 or similar
+### Production Deployment
+```bash
+# Frontend
+npm run build
+npm run start  # Production server
+
+# Backend (Choose one)
+# Python: Deploy with Gunicorn/uWSGI
+# Go: Compile binary and deploy
+# Node.js: Deploy with PM2 or similar
+```
+
+### Vercel Deployment
+The application is configured for one-click deployment on Vercel:
+1. Push to GitHub
+2. Import project in Vercel
+3. Select Next.js framework preset
+4. Deploy!
 
 ## Contributing
 
