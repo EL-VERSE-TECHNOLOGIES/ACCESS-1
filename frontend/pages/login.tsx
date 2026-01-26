@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import axios from 'axios'
+import api from '../lib/api'
 import { useRouter } from 'next/router'
 
 type FormData = { email: string; password: string }
@@ -10,8 +10,7 @@ export default function Login() {
 
   async function onSubmit(data: FormData) {
     try {
-      const base = process.env.NEXT_PUBLIC_API_BASE_URL || ''
-      const res = await axios.post(base + '/api/auth/login', data, { withCredentials: true })
+      const res = await api.post('/auth/login', data)
       const payload = res.data || {}
       const token = payload.accessToken || payload.token || payload.access_token || null
       if (token && typeof window !== 'undefined') {

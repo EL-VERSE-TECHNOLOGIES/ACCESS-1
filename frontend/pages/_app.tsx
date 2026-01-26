@@ -6,6 +6,7 @@ import SocketProvider from '../components/SocketProvider'
 import Layout from '../components/Layout'
 import { ThemeProvider } from '../components/ThemeProvider'
 import { StuckDetectionProvider } from '../components/StuckDetectionProvider'
+import { ApiErrorProvider } from '../components/ApiErrorProvider'
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient())
@@ -15,9 +16,11 @@ function MyApp({ Component, pageProps }: AppProps) {
       <ThemeProvider>
         <StuckDetectionProvider>
           <SocketProvider>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
+            <ApiErrorProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </ApiErrorProvider>
           </SocketProvider>
         </StuckDetectionProvider>
       </ThemeProvider>

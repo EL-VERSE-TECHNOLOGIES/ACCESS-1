@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import axios from 'axios'
+import api from '../lib/api'
 import { useRouter } from 'next/router'
 
 type FormData = { email: string; username: string; password: string; fullName: string }
@@ -10,8 +10,7 @@ export default function Register() {
 
   async function onSubmit(data: FormData) {
     try {
-      const base = process.env.NEXT_PUBLIC_API_BASE_URL || ''
-      await axios.post(base + '/api/auth/register', { ...data, app: 'EL_ACCESS' })
+      await api.post('/auth/register', { ...data, app: 'EL_ACCESS' })
       alert('Registered — please login')
       router.push('/login')
     } catch (err: any) {
