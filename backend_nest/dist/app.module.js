@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
+const config_1 = require("@nestjs/config");
 const user_service_1 = require("./services/user.service");
 const jwt_strategy_1 = require("./middleware/jwt.strategy");
 const user_controller_1 = require("./controllers/user.controller");
@@ -21,15 +22,15 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
             typeorm_1.TypeOrmModule.forRoot({
-                type: 'postgres',
-                host: process.env.DB_HOST || 'localhost',
-                port: parseInt(process.env.DB_PORT) || 5432,
-                username: process.env.DB_USERNAME || 'user',
-                password: process.env.DB_PASSWORD || 'password',
-                database: process.env.DB_NAME || 'elaccess',
+                type: 'sqlite',
+                database: ':memory:',
                 entities: [user_entity_1.User, user_entity_1.Task, user_entity_1.Submission, user_entity_1.WalletTransaction, user_entity_1.Notification, user_entity_1.PeerHelpRequest, user_entity_1.ChatMessage, user_entity_1.DailyMultiplier],
                 synchronize: true,
+                autoLoadEntities: true,
             }),
             typeorm_1.TypeOrmModule.forFeature([
                 user_entity_1.User, user_entity_1.Task, user_entity_1.Submission, user_entity_1.WalletTransaction,

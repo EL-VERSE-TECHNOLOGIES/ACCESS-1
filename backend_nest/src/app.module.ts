@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService, UserService, TaskService, SubmissionService, WalletService, NotificationService, PeerHelpService, ChatService, DashboardService } from './services/user.service';
 import { JwtStrategy } from './middleware/jwt.strategy';
 import { AuthController, UserController, TaskController, SubmissionController, WalletController, NotificationController, PeerHelpController, DashboardController, HealthController } from './controllers/user.controller';
@@ -9,18 +10,18 @@ import { User, Task, Submission, WalletTransaction, Notification, PeerHelpReques
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
-      username: process.env.DB_USERNAME || 'user',
-      password: process.env.DB_PASSWORD || 'password',
-      database: process.env.DB_NAME || 'elaccess',
+      type: 'sqlite', // Changed to SQLite for easier development
+      database: ':memory:', // In-memory database for development
       entities: [User, Task, Submission, WalletTransaction, Notification, PeerHelpRequest, ChatMessage, DailyMultiplier],
       synchronize: true, // Note: Don't use synchronize in production
+      autoLoadEntities: true,
     }),
     TypeOrmModule.forFeature([
-      User, Task, Submission, WalletTransaction, 
+      User, Task, Submission, WalletTransaction,
       Notification, PeerHelpRequest, ChatMessage, DailyMultiplier
     ]),
     JwtModule.register({
