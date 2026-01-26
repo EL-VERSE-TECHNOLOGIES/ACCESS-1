@@ -37,7 +37,7 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
           <div>
             <p className="text-text-secondary text-sm">Current Balance</p>
             <h3 className="text-3xl font-bold bg-gradient-to-r from-neon-accent to-emerald-400 bg-clip-text text-transparent mt-1">
-              {(balance / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}
+              {balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {currency}
             </h3>
           </div>
           <div className="bg-gradient-to-br from-slate-700 to-slate-800 p-4 rounded-xl border border-slate-600/50">
@@ -76,7 +76,7 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
               <div className="w-3 h-3 rounded-full bg-neon-accent mr-2"></div>
               <span className="text-text-secondary">Available</span>
             </div>
-            <span className="font-medium text-white">{(balance / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}</span>
+            <span className="font-medium text-white">{balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {currency}</span>
           </div>
 
           <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
@@ -84,7 +84,7 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
               <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
               <span className="text-text-secondary">Pending</span>
             </div>
-            <span className="font-medium text-white">{(pendingAmount / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}</span>
+            <span className="font-medium text-white">{pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {currency}</span>
           </div>
         </div>
 
@@ -92,7 +92,7 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
             <p className="text-text-secondary text-xs">Weekly Earnings</p>
-            <p className="text-success font-bold text-lg">+{(weeklyEarnings / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}</p>
+            <p className="text-success font-bold text-lg">+{weeklyEarnings.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {currency}</p>
           </div>
           <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
             <p className="text-text-secondary text-xs">Daily Multiplier</p>

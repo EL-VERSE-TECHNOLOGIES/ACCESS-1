@@ -48,6 +48,7 @@ interface Badge {
   icon: string;
   earned: boolean;
   earnedDate?: string;
+  category: string;
 }
 
 interface Submission {

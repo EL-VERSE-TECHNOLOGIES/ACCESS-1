@@ -22,14 +22,22 @@ export default function Register() {
   const [faceVerified, setFaceVerified] = useState<boolean>(false);
   const [fingerprintVerified, setFingerprintVerified] = useState<boolean>(false);
 
-  const handleCvUpload = (url: string) => {
+  const handleCvUpload = (mediaId: string) => {
+    // Assuming the mediaId can be used to construct the URL
+    // In a real implementation, you'd have a way to get the actual URL from the mediaId
+    const url = `/api/media/${mediaId}`; // Placeholder - adjust based on your actual media serving approach
     setCvUploaded(url);
     setValue('cv', url);
   };
 
-  const handleFaceVerification = (verified: boolean) => {
-    setFaceVerified(verified);
-    setValue('faceVerified', verified);
+  const handleFaceVerification = () => {
+    setFaceVerified(true);
+    setValue('faceVerified', true);
+  };
+
+  const handleCancelFaceVerification = () => {
+    setFaceVerified(false);
+    setValue('faceVerified', false);
   };
 
   const handleFingerprintVerification = (verified: boolean) => {
@@ -152,7 +160,7 @@ export default function Register() {
 
         <div className="mb-6">
           <label className="block mb-2 font-medium">Upload CV *</label>
-          <UploadWidget onUpload={handleCvUpload} resourceType="raw" folder="cvs" />
+          <UploadWidget onComplete={(mediaId) => handleCvUpload(mediaId)} />
           {cvUploaded && (
             <div className="mt-2 p-2 bg-green-100 text-green-800 rounded text-sm">
               CV uploaded successfully: <a href={cvUploaded} target="_blank" rel="noopener noreferrer" className="underline">View</a>
@@ -165,7 +173,7 @@ export default function Register() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border rounded-lg p-4">
               <h4 className="font-medium mb-2">Face Verification</h4>
-              <FacialLivenessCheck onVerificationComplete={handleFaceVerification} />
+              <FacialLivenessCheck onSuccess={handleFaceVerification} onCancel={handleCancelFaceVerification} />
               {faceVerified && (
                 <div className="mt-2 p-2 bg-green-100 text-green-800 rounded text-sm">
                   Face verification completed

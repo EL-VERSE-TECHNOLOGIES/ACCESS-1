@@ -50,7 +50,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <BackendSelector />
             {user ? (
               <>
-                <Link href="/profile" className="text-sm">{user.username || user.fullName || 'Me'}</Link>
+                <Link href="/profile" className="text-sm">{user.name || 'Me'}</Link>
                 <button onClick={logout} className="px-3 py-1 border rounded text-sm">Logout</button>
               </>
             ) : (
