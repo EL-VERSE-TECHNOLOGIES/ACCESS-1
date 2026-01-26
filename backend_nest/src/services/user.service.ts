@@ -134,7 +134,7 @@ export class TaskService {
 
   async getHotTasks(limit = 5): Promise<Task[]> {
     return await this.taskRepository.find({
-      where: { status: 'OPEN' },
+      where: { status: 'OPEN' as any }, // Using 'as any' temporarily until we fix the enum mapping
       order: { reward: 'DESC' },
       take: limit,
     });
@@ -161,7 +161,7 @@ export class SubmissionService {
     Object.assign(submission, submissionDto);
     submission.userId = userId;
     submission.submittedAt = new Date();
-    submission.status = 'pending';
+    submission.status = 'pending' as any; // Using 'as any' temporarily until we fix the enum mapping
     
     return await this.submissionRepository.save(submission);
   }
@@ -274,7 +274,7 @@ export class PeerHelpService {
     const request = new PeerHelpRequest();
     Object.assign(request, requestDto);
     request.userId = userId;
-    request.status = 'open';
+    request.status = 'open' as any; // Using 'as any' temporarily until we fix the enum mapping
     
     return await this.peerHelpRequestRepository.save(request);
   }
@@ -312,7 +312,7 @@ export class ChatService {
     message.senderId = senderId;
     message.receiverId = messageDto.receiverId;
     message.message = messageDto.message;
-    message.messageType = messageDto.messageType || 'text';
+    message.messageType = (messageDto.messageType || 'text') as any; // Using 'as any' temporarily until we fix the enum mapping
     
     return await this.chatMessageRepository.save(message);
   }
