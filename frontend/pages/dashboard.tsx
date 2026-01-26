@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import axios from 'axios'
+import api from '../lib/api'
 import Link from 'next/link'
 import AuthShell from '../components/AuthShell'
 import ProgressRing from '../components/ProgressRing'
@@ -7,8 +7,9 @@ import StipendWallet from '../components/StipendWallet'
 import HotTasks from '../components/HotTasks'
 import UnoAIBubble from '../components/UnoAIBubble'
 import TaskSubmission from '../components/TaskSubmission'
+import Loader from '../components/Loader'
 
-const fetcher = (url: string) => axios.get(url, { withCredentials: true }).then(r => r.data)
+const fetcher = (url: string) => api.get(url).then(r => r.data)
 
 interface Task {
   id: string;
@@ -64,10 +65,10 @@ export default function Dashboard() {
 
   const handleNewSubmission = async (taskId: string, code: string) => {
     try {
-      await axios.post(`${base}/api/access/tasks/${taskId}/submit`, {
+      await api.post(`/access/tasks/${taskId}/submit`, {
         code,
         taskId
-      }, { withCredentials: true });
+      });
 
       // Refresh the data after submission
       window.location.reload(); // Simple refresh for now
@@ -77,8 +78,22 @@ export default function Dashboard() {
     }
   };
 
-  if (error) return <div className="p-6 text-text-secondary">Failed to load dashboard</div>
-  if (!data) return <div className="p-6 text-text-secondary">Loading...</div>
+  if (error) return (
+    <AuthShell>
+      <div className="p-6 text-text-secondary flex flex-col items-center justify-center min-h-screen">
+        <p>Failed to load dashboard</p>
+        <p className="text-sm mt-2 text-red-500">{error?.message || 'Unknown error'}</p>
+      </div>
+    </AuthShell>
+  );
+
+  if (!data) return (
+    <AuthShell>
+      <div className="p-6 flex flex-col items-center justify-center min-h-screen">
+        <Loader size="lg" message="Loading your dashboard..." />
+      </div>
+    </AuthShell>
+  );
 
   const { user, hotTasks, recentActivity, submissions, tasks } = data;
 
