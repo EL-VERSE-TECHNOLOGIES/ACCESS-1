@@ -17,9 +17,11 @@ api.interceptors.request.use(
       config.baseURL = getBackendUrl() + '/api'
 
       // Attach Authorization header from localStorage token if present
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
-      if (token && config.headers) {
-        config.headers['Authorization'] = `Bearer ${token}`
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('accessToken')
+        if (token && config.headers) {
+          config.headers['Authorization'] = `Bearer ${token}`
+        }
       }
     } catch (e) {
       // ignore
