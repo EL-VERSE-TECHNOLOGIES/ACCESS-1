@@ -6,7 +6,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET", "elaccess_secret_key_for_dev"))
+var jwtSecret = []byte(func() string {
+	if secret := os.Getenv("JWT_SECRET"); secret != "" {
+		return secret
+	}
+	return "elaccess_secret_key_for_dev"
+}())
 
 type Claims struct {
 	UserID string `json:"user_id"`

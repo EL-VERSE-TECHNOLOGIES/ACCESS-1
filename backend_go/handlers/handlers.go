@@ -7,7 +7,6 @@ import (
 	"backend_go/services"
 	"backend_go/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -254,7 +253,8 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 }
 
 func (h *Handler) GetHotTasks(c *gin.Context) {
-	tasks, err := h.Service.Task.GetHotTasks()
+	limit := 5 // Default limit
+	tasks, err := h.Service.Task.GetHotTasks(limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch hot tasks"})
 		return
@@ -426,7 +426,7 @@ func (h *Handler) GetDashboardData(c *gin.Context) {
 		return
 	}
 	
-	hotTasks, err := h.Service.Task.GetHotTasks()
+	hotTasks, err := h.Service.Task.GetHotTasks(5)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch hot tasks"})
 		return

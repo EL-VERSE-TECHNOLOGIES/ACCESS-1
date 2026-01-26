@@ -10,15 +10,13 @@ import (
 	"backend_go/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func main() {
-	// Connect to database
-	dsn := os.Getenv("DATABASE_URL", "host=localhost user=user password=password dbname=elaccess port=5432 sslmode=disable")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// Connect to database - using SQLite for development
+	db, err := gorm.Open(sqlite.Open("elaccess.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -108,7 +106,12 @@ func main() {
 	}
 
 	// Start server
-	port := os.Getenv("PORT", "8000")
+	port := func() string {
+		if p := os.Getenv("PORT"); p != "" {
+			return p
+		}
+		return "8000"
+	}()
 	fmt.Printf("Server starting on port %s\n", port)
 	r.Run(":" + port)
 }
