@@ -20,6 +20,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     router.push('/login')
   }
 
+  // Check if user has management/admin privileges
+  const isManagementOrAdmin = user && (user.tier === 'Management' || user.tier === 'Lead');
+
   return (
     <div>
       <header className="bg-white shadow">
@@ -39,7 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/internships">Internships</Link>
               <Link href="/peer-help">Peer Help</Link>
               <Link href="/wallet">Wallet</Link>
-              <Link href="/health">Health Check</Link>
+              {isManagementOrAdmin && <Link href="/health">Health Check</Link>}
             </nav>
           </div>
 

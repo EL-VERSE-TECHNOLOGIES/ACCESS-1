@@ -16,6 +16,9 @@ type User struct {
 	UpdatedAt            time.Time      `json:"updated_at"`
 	IsActive             bool           `gorm:"default:true" json:"is_active"`
 	FaceVerificationStatus string       `gorm:"default:'pending'" json:"face_verification_status"` // none, pending, verified
+	CV                   string         `json:"cv,omitempty"` // URL or path to CV document
+	TransactionPin       string         `json:"-"` // Don't expose transaction pin in JSON
+	FingerprintVerified  bool           `json:"fingerprint_verified"` // Whether user has completed fingerprint verification
 	Tasks                []Task         `gorm:"foreignKey:CreatedBy" json:"-"`
 	Submissions          []Submission   `gorm:"foreignKey:UserID" json:"-"`
 	WalletTransactions   []WalletTransaction `gorm:"foreignKey:UserID" json:"-"`

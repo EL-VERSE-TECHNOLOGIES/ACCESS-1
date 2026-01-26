@@ -50,9 +50,13 @@ func (h *Handler) Login(c *gin.Context) {
 
 func (h *Handler) Register(c *gin.Context) {
 	var req struct {
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required"`
-		Name     string `json:"name" binding:"required"`
+		Email               string `json:"email" binding:"required,email"`
+		Password            string `json:"password" binding:"required"`
+		Name                string `json:"name" binding:"required"`
+		CV                  string `json:"cv,omitempty"`
+		TransactionPin      string `json:"transactionPin,omitempty"`
+		FaceVerified        bool   `json:"faceVerified,omitempty"`
+		FingerprintVerified bool   `json:"fingerprintVerified,omitempty"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -60,16 +64,62 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
+	// Validate transaction PIN if provided
+	if req.TransactionPin != "" && len(req.TransactionPin) != 4 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Transaction PIN must be 4 digits"})
+		return
+	}
+
+	// Validate that at least one biometric verification is completed
+	if !req.FaceVerified && !req.FingerprintVerified {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "At least one biometric verification is required"})
+		return
+	}
+
 	user, err := h.Service.User.CreateUser(models.User{
-		Email: req.Email,
-		Name:  req.Name,
+		Email:                 req.Email,
+		Name:                  req.Name,
+		PasswordHash:          req.Password, // Password will be hashed in the service layer
+		Tier:                  "Intern",     // Default to Intern for new users
+		CV:                    req.CV,
+		TransactionPin:        req.TransactionPin,
+		FingerprintVerified:   req.FingerprintVerified,
+		FaceVerificationStatus: func() string {
+			if req.FaceVerified {
+				return "verified"
+			}
+			return "pending"
+		}(),
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	// Return user without sensitive information
+	responseUser := struct {
+		ID                   string `json:"id"`
+		Email                string `json:"email"`
+		Name                 string `json:"name"`
+		Tier                 string `json:"tier"`
+		CreatedAt            string `json:"created_at"`
+		IsActive             bool   `json:"is_active"`
+		FaceVerificationStatus string `json:"face_verification_status"`
+		CV                   string `json:"cv,omitempty"`
+		FingerprintVerified  bool   `json:"fingerprint_verified"`
+	}{
+		ID:                   user.ID,
+		Email:                user.Email,
+		Name:                 user.Name,
+		Tier:                 user.Tier,
+		CreatedAt:            user.CreatedAt.String(),
+		IsActive:             user.IsActive,
+		FaceVerificationStatus: user.FaceVerificationStatus,
+		CV:                   user.CV,
+		FingerprintVerified:  user.FingerprintVerified,
+	}
+
+	c.JSON(http.StatusCreated, responseUser)
 }
 
 func (h *Handler) GetCurrentUser(c *gin.Context) {

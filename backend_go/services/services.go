@@ -74,6 +74,15 @@ func (s *UserService) CreateUser(user models.User) (*models.User, error) {
 	}
 	user.PasswordHash = string(hashedPassword)
 
+	// Hash the transaction pin if provided
+	if user.TransactionPin != "" {
+		hashedPin, err := bcrypt.GenerateFromPassword([]byte(user.TransactionPin), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+		user.TransactionPin = string(hashedPin)
+	}
+
 	// Generate UUID if not provided
 	if user.ID == "" {
 		user.ID = uuid.New().String()
