@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends
 from api.routers import router
+from api.data_routers import router as data_router
 from config.database import engine, Base
 from starlette.middleware.cors import CORSMiddleware
 
@@ -20,8 +21,10 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(router, prefix="/api")
+# Include data processing and analytics routes
+app.include_router(data_router, prefix="/api")
 
 
 @app.get("/")
 def read_root():
-    return {"message": "EL ACCESS Python Backend API"}
+    return {"message": "EL ACCESS Python Backend API - Data Processing & Analytics"}

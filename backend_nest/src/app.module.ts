@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService, UserService, TaskService, SubmissionService, WalletService, NotificationService, PeerHelpService, ChatService, DashboardService } from './services/user.service';
 import { JwtStrategy } from './middleware/jwt.strategy';
 import { AuthController, UserController, TaskController, SubmissionController, WalletController, NotificationController, PeerHelpController, DashboardController, HealthController } from './controllers/user.controller';
+import { SocialController } from './controllers/social.controller';
 import { User, Task, Submission, WalletTransaction, Notification, PeerHelpRequest, ChatMessage, DailyMultiplier } from './entities/user.entity';
 
 @Module({
@@ -31,9 +32,10 @@ import { User, Task, Submission, WalletTransaction, Notification, PeerHelpReques
     PassportModule,
   ],
   controllers: [
-    AuthController, UserController, TaskController, 
-    SubmissionController, WalletController, NotificationController, 
-    PeerHelpController, DashboardController, HealthController
+    AuthController, UserController, TaskController,
+    SubmissionController, WalletController, NotificationController,
+    PeerHelpController, DashboardController, HealthController,
+    SocialController
   ],
   providers: [
     AuthService, UserService, TaskService, SubmissionService, 

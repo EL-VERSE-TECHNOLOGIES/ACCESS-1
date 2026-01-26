@@ -15,7 +15,7 @@ async function bootstrap() {
   // Use global validation pipe
   app.useGlobalPipes(new ValidationPipe());
   
-  const port = process.env.PORT || 8001;
+  const port = process.env.PORT || 8002;
   await app.listen(port);
   console.log(`EL ACCESS NestJS Backend is running on: http://localhost:${port}`);
 }

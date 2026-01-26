@@ -127,7 +127,7 @@ export class Task {
   @IsEnum(Difficulty)
   difficulty: Difficulty;
 
-  @Column('text', { array: true, default: () => 'ARRAY[]::text[]' })
+  @Column('simple-array', { default: '' })
   @IsArray()
   stack: string[];
 
@@ -168,7 +168,7 @@ export class Submission {
   @IsOptional()
   code: string;
 
-  @Column({ name: 'submitted_at', type: 'timestamp' })
+  @Column({ name: 'submitted_at', type: 'datetime' })
   submittedAt: Date;
 
   @Column({ default: SubmissionStatus.PENDING })
@@ -189,7 +189,7 @@ export class Submission {
   @IsOptional()
   reviewedBy: string; // user ID of reviewer
 
-  @Column({ name: 'reviewed_at', type: 'timestamp', nullable: true })
+  @Column({ name: 'reviewed_at', type: 'datetime', nullable: true })
   @IsOptional()
   reviewedAt: Date;
 
@@ -301,7 +301,7 @@ export class PeerHelpRequest {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ name: 'resolved_at', type: 'timestamp', nullable: true })
+  @Column({ name: 'resolved_at', type: 'datetime', nullable: true })
   @IsOptional()
   resolvedAt: Date;
 

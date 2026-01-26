@@ -56,3 +56,7 @@ export function getSelectedBackend(): BackendConfig {
   // Default to python backend when server-side rendering
   return BACKEND_CONFIGS.python;
 }
+
+export function getBackendUrlForService(service: 'python' | 'go' | 'nodejs'): string {
+  return BACKEND_CONFIGS[service]?.url || BACKEND_CONFIGS.python.url;
+}

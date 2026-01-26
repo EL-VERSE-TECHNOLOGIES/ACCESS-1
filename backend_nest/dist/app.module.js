@@ -15,6 +15,7 @@ const config_1 = require("@nestjs/config");
 const user_service_1 = require("./services/user.service");
 const jwt_strategy_1 = require("./middleware/jwt.strategy");
 const user_controller_1 = require("./controllers/user.controller");
+const social_controller_1 = require("./controllers/social.controller");
 const user_entity_1 = require("./entities/user.entity");
 let AppModule = class AppModule {
 };
@@ -45,7 +46,8 @@ exports.AppModule = AppModule = __decorate([
         controllers: [
             user_controller_1.AuthController, user_controller_1.UserController, user_controller_1.TaskController,
             user_controller_1.SubmissionController, user_controller_1.WalletController, user_controller_1.NotificationController,
-            user_controller_1.PeerHelpController, user_controller_1.DashboardController, user_controller_1.HealthController
+            user_controller_1.PeerHelpController, user_controller_1.DashboardController, user_controller_1.HealthController,
+            social_controller_1.SocialController
         ],
         providers: [
             user_service_1.AuthService, user_service_1.UserService, user_service_1.TaskService, user_service_1.SubmissionService,

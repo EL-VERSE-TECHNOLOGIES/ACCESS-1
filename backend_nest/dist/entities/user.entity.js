@@ -165,7 +165,7 @@ __decorate([
     __metadata("design:type", String)
 ], Task.prototype, "difficulty", void 0);
 __decorate([
-    (0, typeorm_1.Column)('text', { array: true, default: () => 'ARRAY[]::text[]' }),
+    (0, typeorm_1.Column)('simple-array', { default: '' }),
     (0, class_validator_1.IsArray)(),
     __metadata("design:type", Array)
 ], Task.prototype, "stack", void 0);
@@ -220,7 +220,7 @@ __decorate([
     __metadata("design:type", String)
 ], Submission.prototype, "code", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'submitted_at', type: 'timestamp' }),
+    (0, typeorm_1.Column)({ name: 'submitted_at', type: 'datetime' }),
     __metadata("design:type", Date)
 ], Submission.prototype, "submittedAt", void 0);
 __decorate([
@@ -246,7 +246,7 @@ __decorate([
     __metadata("design:type", String)
 ], Submission.prototype, "reviewedBy", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'reviewed_at', type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'reviewed_at', type: 'datetime', nullable: true }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Date)
 ], Submission.prototype, "reviewedAt", void 0);
@@ -395,7 +395,7 @@ __decorate([
     __metadata("design:type", Date)
 ], PeerHelpRequest.prototype, "updatedAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'resolved_at', type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'resolved_at', type: 'datetime', nullable: true }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Date)
 ], PeerHelpRequest.prototype, "resolvedAt", void 0);
