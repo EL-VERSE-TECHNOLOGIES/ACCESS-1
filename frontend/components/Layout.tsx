@@ -25,24 +25,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div>
-      <header className="bg-white shadow">
-        <div className="max-w-6xl mx-auto p-4 flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <Image
-                src="/images/logo.svg"
-                alt="EL ACCESS Logo"
-                width={32}
-                height={32}
-                className="rounded-md"
-              />
-              <span className="font-semibold">EL ACCESS</span>
+      <header className="bg-dark-surface border-b border-slate-800 shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-8">
+            <Link href="/dashboard" className="flex items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-neon-accent rounded-md blur opacity-25 group-hover:opacity-75 transition duration-200"></div>
+                <Image
+                  src="/images/new_logo.jpg"
+                  alt="EL ACCESS Logo"
+                  width={36}
+                  height={36}
+                  className="rounded-md relative bg-white"
+                />
+              </div>
+              <span className="font-bold text-xl tracking-tight text-white group-hover:text-neon-accent transition-colors">EL ACCESS</span>
             </Link>
-            <nav className="flex gap-3">
-              <Link href="/internships">Internships</Link>
-              <Link href="/peer-help">Peer Help</Link>
-              <Link href="/wallet">Wallet</Link>
-              {isManagementOrAdmin && <Link href="/health">Health Check</Link>}
+            <nav className="hidden md:flex gap-6">
+              <Link href="/internships" className="text-sm font-medium text-text-secondary hover:text-neon-accent transition-colors">Internships</Link>
+              <Link href="/peer-help" className="text-sm font-medium text-text-secondary hover:text-neon-accent transition-colors">Peer Help</Link>
+              <Link href="/wallet" className="text-sm font-medium text-text-secondary hover:text-neon-accent transition-colors">Wallet</Link>
+              {isManagementOrAdmin && <Link href="/health" className="text-sm font-medium text-text-secondary hover:text-neon-accent transition-colors">Health Check</Link>}
             </nav>
           </div>
 

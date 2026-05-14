@@ -28,7 +28,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             typeorm_1.TypeOrmModule.forRoot({
                 type: 'sqlite',
-                database: ':memory:',
+                database: 'elaccess.sqlite',
                 entities: [user_entity_1.User, user_entity_1.Task, user_entity_1.Submission, user_entity_1.WalletTransaction, user_entity_1.Notification, user_entity_1.PeerHelpRequest, user_entity_1.ChatMessage, user_entity_1.DailyMultiplier],
                 synchronize: true,
                 autoLoadEntities: true,

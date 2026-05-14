@@ -25,6 +25,9 @@ let AuthController = class AuthController {
     async login(loginDto) {
         return this.authService.login(loginDto);
     }
+    async logout() {
+        return { message: 'Successfully logged out' };
+    }
     async register(createUserDto) {
         return this.authService.register(createUserDto);
     }
@@ -41,6 +44,13 @@ __decorate([
     __metadata("design:paramtypes", [user_dto_1.LoginDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Post)('auth/logout'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "logout", null);
 __decorate([
     (0, common_1.Post)('auth/register'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),

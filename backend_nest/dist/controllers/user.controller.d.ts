@@ -8,6 +8,9 @@ export declare class AuthController {
         access_token: string;
         token_type: string;
     }>;
+    logout(): Promise<{
+        message: string;
+    }>;
     register(createUserDto: CreateUserDto): Promise<import("../entities/user.entity").User>;
     getProfile(req: any): Promise<import("../entities/user.entity").User>;
 }
