@@ -59,7 +59,7 @@ ACCESS-1/
 - Located in `backend_python/`
 - Built with FastAPI and SQLAlchemy
 - Async-first framework with automatic API documentation
-- Runs on port 8000 by default
+- Runs on port 8001 by default
 
 ### Go Backend (Gin)
 - Located in `backend_go/`
@@ -71,7 +71,7 @@ ACCESS-1/
 - Located in `backend_nest/`
 - Built with NestJS and TypeORM
 - TypeScript-based progressive Node.js framework
-- Runs on port 8001 by default
+- Runs on port 8002 by default
 
 ## Database Schema
 
@@ -124,7 +124,7 @@ The frontend will be available at `http://localhost:3000`.
 ```bash
 cd backend_python
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8001
 ```
 
 #### Go Backend
@@ -147,9 +147,9 @@ npm run start:dev
 ```
 # API Configuration
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-NEXT_PUBLIC_PYTHON_BACKEND_URL=http://localhost:8000
+NEXT_PUBLIC_PYTHON_BACKEND_URL=http://localhost:8001
 NEXT_PUBLIC_GO_BACKEND_URL=http://localhost:8000
-NEXT_PUBLIC_NODEJS_BACKEND_URL=http://localhost:8001
+NEXT_PUBLIC_NODEJS_BACKEND_URL=http://localhost:8002
 NEXT_PUBLIC_DEFAULT_BACKEND=python
 
 # WebSocket Configuration
@@ -222,7 +222,7 @@ npm run dev
 # Python backend
 cd backend_python
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8001
 
 # Go backend
 cd backend_go
@@ -296,7 +296,7 @@ npm run dev
 # Python backend
 cd backend_python
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8001
 
 # Go backend
 cd backend_go

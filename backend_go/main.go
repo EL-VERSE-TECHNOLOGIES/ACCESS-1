@@ -65,6 +65,7 @@ func main() {
 		auth := api.Group("/auth")
 		{
 			auth.POST("/login", handler.Login)
+			auth.POST("/logout", handler.Logout)
 			auth.POST("/register", handler.Register)
 			auth.GET("/me", validateJWT(), handler.GetCurrentUser)
 		}
@@ -156,11 +157,23 @@ func redirectToBackendWithParam(c *gin.Context, backendType, path string) {
 func getBackendURL(backendType string) string {
 	switch backendType {
 	case "python":
-		return os.Getenv("PYTHON_BACKEND_URL", "http://localhost:8001")
+		url := os.Getenv("PYTHON_BACKEND_URL")
+		if url == "" {
+			return "http://localhost:8001"
+		}
+		return url
 	case "nodejs":
-		return os.Getenv("NODEJS_BACKEND_URL", "http://localhost:8002")
+		url := os.Getenv("NODEJS_BACKEND_URL")
+		if url == "" {
+			return "http://localhost:8002"
+		}
+		return url
 	default:
-		return os.Getenv("DEFAULT_BACKEND_URL", "http://localhost:8000")
+		url := os.Getenv("DEFAULT_BACKEND_URL")
+		if url == "" {
+			return "http://localhost:8000"
+		}
+		return url
 	}
 }
 

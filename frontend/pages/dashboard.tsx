@@ -62,8 +62,7 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || ''
-  const { data, error } = useSWR<DashboardData>(base + '/api/access/dashboard', fetcher)
+  const { data, error, mutate } = useSWR<DashboardData>('/access/dashboard', fetcher)
   const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'activity'>('overview');
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -78,13 +77,13 @@ export default function Dashboard() {
 
   const handleNewSubmission = async (taskId: string, code: string) => {
     try {
-      await api.post(`/access/tasks/${taskId}/submit`, {
+      await api.post(`/tasks/${taskId}/submit`, {
         code,
         taskId
       });
 
       // Refresh the data after submission
-      window.location.reload(); // Simple refresh for now
+      mutate();
     } catch (err) {
       console.error('Submission failed:', err);
       alert('Submission failed. Please try again.');

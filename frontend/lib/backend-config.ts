@@ -9,7 +9,7 @@ export interface BackendConfig {
 export const BACKEND_CONFIGS: Record<string, BackendConfig> = {
   python: {
     name: 'Python (FastAPI)',
-    url: process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000',
+    url: process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8001',
     type: 'python',
     description: 'Python backend using FastAPI framework'
   },
@@ -21,7 +21,7 @@ export const BACKEND_CONFIGS: Record<string, BackendConfig> = {
   },
   nodejs: {
     name: 'Node.js (NestJS)',
-    url: process.env.NEXT_PUBLIC_NODEJS_BACKEND_URL || 'http://localhost:8001',
+    url: process.env.NEXT_PUBLIC_NODEJS_BACKEND_URL || 'http://localhost:8002',
     type: 'nodejs',
     description: 'Node.js backend using NestJS framework'
   }

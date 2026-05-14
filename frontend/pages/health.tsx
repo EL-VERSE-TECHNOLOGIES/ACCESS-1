@@ -1,5 +1,6 @@
+import Head from 'next/head';
 import { useState, useEffect } from 'react';
-import api from '../lib/api';
+import axios from 'axios';
 import { getAvailableBackends, getSelectedBackend } from '../lib/backend-config';
 import Loader from '../components/Loader';
 
@@ -15,15 +16,9 @@ export default function Health() {
   const checkBackend = async (backendType: string, url: string) => {
     const startTime = Date.now();
     try {
-      // Temporarily change the API base URL to check this specific backend
-      const originalBaseUrl = (api as any).defaults.baseURL;
-      (api as any).defaults.baseURL = `${url}/api`;
-
-      const response = await api.get('/health');
+      // Use a fresh axios instance to bypass any interceptors
+      const response = await axios.get(`${url}/api/health`, { timeout: 5000 });
       const responseTime = Date.now() - startTime;
-
-      // Restore original base URL
-      (api as any).defaults.baseURL = originalBaseUrl;
 
       return {
         status: response.data?.status || 'unknown',
@@ -31,9 +26,6 @@ export default function Health() {
       };
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
-      // Restore original base URL
-      (api as any).defaults.baseURL = `${window.location.origin}/api`;
-
       return {
         status: 'error',
         responseTime,
@@ -63,6 +55,9 @@ export default function Health() {
 
   return (
     <div className="min-h-screen p-6 bg-gray-50">
+      <Head>
+        <title>Backend Health Status | EL ACCESS</title>
+      </Head>
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Backend Health Status</h1>
         <p className="text-gray-600 mb-8">Monitor the status of all backend implementations</p>

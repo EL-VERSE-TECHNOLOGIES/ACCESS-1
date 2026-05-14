@@ -42,7 +42,7 @@ export DATABASE_URL="postgresql://username:password@localhost/elaccess"
 export SECRET_KEY="your-super-secret-key"
 
 # Run the server
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8001
 ```
 
 #### Option B: Go Backend
@@ -92,7 +92,7 @@ npm install
 # Configure the API base URL to match your chosen backend:
 # For Python backend: NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 # For Go backend: NEXT_PUBLIC_API_BASE_URL=http://localhost:8000  
-# For Node.js backend: NEXT_PUBLIC_API_BASE_URL=http://localhost:8001
+# For Node.js backend: NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 
 # Create .env.local file
 echo "NEXT_PUBLIC_API_BASE_URL=http://localhost:8000" > .env.local
@@ -156,7 +156,7 @@ DB_USERNAME=user
 DB_PASSWORD=password
 DB_NAME=elaccess
 JWT_SECRET=your-jwt-secret
-PORT=8001
+PORT=8002
 ```
 
 ### Frontend (.env.local)
@@ -224,9 +224,9 @@ For production deployment:
 4. **CORS Errors**: Backend CORS settings allow frontend origin
 
 ### API Documentation:
-- Python backend: http://localhost:8000/docs
+- Python backend: http://localhost:8001/docs
 - Go backend: Routes defined in main.go
-- Node.js backend: http://localhost:8001/api (Swagger if configured)
+- Node.js backend: http://localhost:8002/api (Swagger if configured)
 
 ## Contributing
 
