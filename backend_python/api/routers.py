@@ -28,6 +28,11 @@ from uuid import UUID
 router = APIRouter()
 
 
+@router.post("/auth/logout")
+async def logout():
+    return {"message": "Successfully logged out"}
+
+
 @router.post("/auth/login", response_model=Token)
 async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     user = authenticate_user(db, login_data.email, login_data.password)

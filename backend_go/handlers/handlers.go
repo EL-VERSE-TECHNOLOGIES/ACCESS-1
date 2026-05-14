@@ -18,6 +18,10 @@ func NewHandler(service *services.Service) *Handler {
 }
 
 // Auth handlers
+func (h *Handler) Logout(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully logged out"})
+}
+
 func (h *Handler) Login(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email" binding:"required,email"`

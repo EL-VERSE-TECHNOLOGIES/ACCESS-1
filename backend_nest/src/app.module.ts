@@ -16,7 +16,7 @@ import { User, Task, Submission, WalletTransaction, Notification, PeerHelpReques
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite', // Changed to SQLite for easier development
-      database: ':memory:', // In-memory database for development
+      database: 'elaccess.sqlite', // File-based database for persistence
       entities: [User, Task, Submission, WalletTransaction, Notification, PeerHelpRequest, ChatMessage, DailyMultiplier],
       synchronize: true, // Note: Don't use synchronize in production
       autoLoadEntities: true,

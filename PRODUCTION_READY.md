@@ -73,8 +73,8 @@
 7. Check health status at `/health`
 
 ## Supported Backends
-- Python (FastAPI): High-performance async Python backend
-- Go (Gin): Ultra-fast Go backend for high throughput
-- Node.js (NestJS): Enterprise-grade Node.js backend
+- Python (FastAPI): High-performance async Python backend (Port 8001)
+- Go (Gin): Ultra-fast Go backend for high throughput (Port 8000)
+- Node.js (NestJS): Enterprise-grade Node.js backend (Port 8002)
 
 All backends implement the same API contract for seamless switching.
