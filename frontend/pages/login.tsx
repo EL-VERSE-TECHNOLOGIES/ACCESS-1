@@ -24,15 +24,69 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md p-6 bg-white rounded shadow">
-        <h2 className="text-xl font-medium mb-4">Login</h2>
-        <label className="block mb-2">Email</label>
-        <input {...register('email')} className="w-full p-2 border rounded mb-3" />
-        <label className="block mb-2">Password</label>
-        <input {...register('password')} type="password" className="w-full p-2 border rounded mb-4" />
-        <button className="w-full py-2 bg-blue-600 text-white rounded">Sign in</button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-dark-surface relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-neon-accent/10 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px]"></div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-md px-6">
+        <div className="text-center mb-10">
+          <div className="inline-block p-3 rounded-2xl bg-slate-900 border border-slate-800 shadow-neon mb-6">
+            <Image
+              src="/images/new_logo.jpg"
+              alt="Logo"
+              width={64}
+              height={64}
+              className="rounded-xl"
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome Back</h1>
+          <p className="text-text-secondary mt-2">Enter your credentials to access EL ACCESS</p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-dark-surface-variant/50 backdrop-blur-xl p-8 rounded-3xl border border-slate-800 shadow-2xl">
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Email Address</label>
+              <input
+                {...register('email')}
+                type="email"
+                placeholder="name@example.com"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-text-secondary">Password</label>
+                <a href="#" className="text-xs text-neon-accent hover:underline">Forgot password?</a>
+              </div>
+              <input
+                {...register('password')}
+                type="password"
+                placeholder="••••••••"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all"
+              />
+            </div>
+
+            <button className="w-full py-4 bg-neon-accent text-dark-surface font-bold rounded-xl hover:bg-neon-accent-hover transform active:scale-[0.98] transition-all shadow-neon mt-4">
+              Sign In
+            </button>
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-text-secondary text-sm">
+              Don't have an account? {' '}
+              <Link href="/register" className="text-neon-accent font-semibold hover:underline">Create Account</Link>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
+
+import Image from 'next/image'
+import Link from 'next/link'
