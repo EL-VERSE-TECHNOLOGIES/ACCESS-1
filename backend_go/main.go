@@ -101,6 +101,8 @@ func main() {
 
 			// Dashboard route (handled by Go backend)
 			protected.GET("/access/dashboard", handler.GetDashboardData)
+			protected.GET("/access/internships", handler.GetInternships)
+			protected.POST("/access/internships/:id/apply", handler.ApplyInternship)
 
 			// Notification routes (redirected to NodeJS backend)
 			protected.GET("/notifications", func(c *gin.Context) {
