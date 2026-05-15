@@ -221,7 +221,7 @@ export default function Register() {
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Fingerprint Bio</span>
                 <button
                   type="button"
-                  onClick={() => handleFingerprintVerification(true)}
+                  onClick={() => handleFingerprintVerification()}
                   className={`w-full py-4 rounded-xl font-bold transition-all duration-300 ${
                     fingerprintVerified
                       ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
