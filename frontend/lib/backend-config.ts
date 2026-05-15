@@ -38,13 +38,15 @@ export function getAvailableBackends(): BackendConfig[] {
 }
 
 export function setSelectedBackend(type: string): void {
-  // Manual switching disabled
+  // Manual switching is now disabled to ensure system synchronization
+  console.warn('Manual backend switching is disabled. System uses functional routing.');
 }
 
 export function getSelectedBackend(): BackendConfig {
+  // Always return Go as the primary/default backend configuration
   return BACKEND_CONFIGS.go;
 }
 
 export function getBackendUrlForService(service: 'python' | 'go' | 'nodejs'): string {
-  return BACKEND_CONFIGS[service]?.url || BACKEND_CONFIGS.python.url;
+  return BACKEND_CONFIGS[service]?.url || BACKEND_CONFIGS.go.url;
 }

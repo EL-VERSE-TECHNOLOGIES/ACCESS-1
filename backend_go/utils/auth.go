@@ -6,6 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// Shared secret key across all ecosystem backends for synchronization
 var jwtSecret = []byte(func() string {
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		return secret

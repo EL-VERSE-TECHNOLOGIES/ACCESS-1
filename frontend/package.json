@@ -31,7 +31,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.44.0",
+    "@playwright/test": "^1.60.0",
     "@types/node": "25.0.10",
     "@types/react": "19.2.9",
     "autoprefixer": "^10.4.14",

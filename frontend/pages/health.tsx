@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getAvailableBackends, getSelectedBackend } from '../lib/backend-config';
 import Loader from '../components/Loader';
+import Layout from '../components/Layout';
 
 export default function Health() {
   const [backendStatus, setBackendStatus] = useState<Record<string, { status: string; responseTime: number; error?: string }>>({});
   const [loading, setLoading] = useState(true);
-  const [selectedBackend, setSelectedBackendState] = useState('');
 
   useEffect(() => {
     checkAllBackends();
@@ -16,7 +16,7 @@ export default function Health() {
   const checkBackend = async (backendType: string, url: string) => {
     const startTime = Date.now();
     try {
-      // Use a fresh axios instance to bypass any interceptors
+      // Use a fresh axios instance to bypass any interceptors for health check
       const response = await axios.get(`${url}/api/health`, { timeout: 5000 });
       const responseTime = Date.now() - startTime;
 
@@ -44,129 +44,110 @@ export default function Health() {
     }
 
     setBackendStatus(status);
-    setSelectedBackendState(getSelectedBackend().type);
     setLoading(false);
   };
 
-  const switchBackend = (type: string) => {
-    localStorage.setItem('selectedBackend', type);
-    window.location.reload();
-  };
-
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <Head>
-        <title>Backend Health Status | EL ACCESS</title>
-      </Head>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Backend Health Status</h1>
-        <p className="text-gray-600 mb-8">Monitor the status of all backend implementations</p>
+    <Layout>
+      <div className="min-h-screen p-6 bg-dark-surface">
+        <Head>
+          <title>System Health | EL ACCESS</title>
+        </Head>
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-white mb-2">System Health Status</h1>
+          <p className="text-text-secondary mb-8">Monitoring all ecosystem backend services</p>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader size="lg" message="Checking backend health..." />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Current Selection</h2>
-              <div className="flex items-center gap-4">
-                <span className="font-medium">Active Backend:</span>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                  {getSelectedBackend().name}
-                </span>
-              </div>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader size="lg" message="Checking system health..." />
             </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="bg-dark-surface-variant/40 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 shadow-xl">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-white">Service Matrix</h2>
+                  <button
+                    onClick={checkAllBackends}
+                    className="px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors border border-slate-700"
+                  >
+                    Refresh Matrix
+                  </button>
+                </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Backend Status</h2>
-                <button 
-                  onClick={checkAllBackends}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                >
-                  Refresh Status
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getAvailableBackends().map((backend) => {
-                  const status = backendStatus[backend.type];
-                  if (!status) return null;
-                  
-                  let statusColor = 'gray';
-                  if (status.status === 'healthy') statusColor = 'green';
-                  if (status.status === 'error') statusColor = 'red';
-                  
-                  return (
-                    <div 
-                      key={backend.type} 
-                      className={`border rounded-lg p-4 ${
-                        selectedBackend === backend.type 
-                          ? 'border-blue-500 border-2' 
-                          : 'border-gray-200'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-medium">{backend.name}</h3>
-                          <p className="text-sm text-gray-500">{backend.description}</p>
-                        </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          statusColor === 'green' ? 'bg-green-100 text-green-800' :
-                          statusColor === 'red' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {status.status}
-                        </span>
-                      </div>
-                      
-                      <div className="mt-3 text-sm">
-                        <p className="text-gray-600">Response Time: {status.responseTime}ms</p>
-                        {status.error && (
-                          <p className="text-red-600 mt-1 truncate" title={status.error}>
-                            Error: {status.error}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <button
-                        onClick={() => switchBackend(backend.type)}
-                        disabled={selectedBackend === backend.type}
-                        className={`mt-3 w-full py-2 text-sm rounded ${
-                          selectedBackend === backend.type
-                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                        }`}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {getAvailableBackends().map((backend) => {
+                    const status = backendStatus[backend.type];
+                    if (!status) return null;
+
+                    let statusColor = 'gray';
+                    if (status.status === 'healthy') statusColor = 'green';
+                    if (status.status === 'error') statusColor = 'red';
+
+                    return (
+                      <div
+                        key={backend.type}
+                        className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 transition-all"
                       >
-                        {selectedBackend === backend.type ? 'Active' : 'Switch to this'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="font-bold text-white">{backend.name}</h3>
+                            <p className="text-xs text-text-secondary">{backend.type === 'go' ? 'Core Services' : backend.type === 'nodejs' ? 'Social & Notify' : 'Analytics'}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            statusColor === 'green' ? 'bg-emerald-500/20 text-emerald-400' :
+                            statusColor === 'red' ? 'bg-red-500/20 text-red-400' :
+                            'bg-slate-800 text-slate-400'
+                          }`}>
+                            {status.status}
+                          </span>
+                        </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Health Check Details</h2>
-              <div className="prose max-w-none">
-                <p>
-                  This page checks the health status of all available backend implementations:
-                </p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li><strong>Python (FastAPI)</strong>: Robust Python backend with async capabilities</li>
-                  <li><strong>Go (Gin)</strong>: High-performance Go backend</li>
-                  <li><strong>Node.js (NestJS)</strong>: Enterprise-grade Node.js backend</li>
-                </ul>
-                <p className="mt-3">
-                  You can switch between backends using the "Switch to this" buttons. 
-                  The active backend will be used for all API requests throughout the application.
-                </p>
+                        <div className="mt-3 text-xs space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Latency:</span>
+                            <span className="text-white font-mono">{status.responseTime}ms</span>
+                          </div>
+                          {status.error && (
+                            <p className="text-red-400 mt-2 text-[10px] line-clamp-1" title={status.error}>
+                              {status.error}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-dark-surface-variant/40 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 shadow-xl">
+                <h2 className="text-xl font-semibold text-white mb-4">Architecture Sync</h2>
+                <div className="prose prose-invert max-w-none text-sm text-text-secondary">
+                  <p>
+                    EL ACCESS uses a synchronized multi-backend architecture where each language handles specific domains:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                    <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                      <p className="font-bold text-neon-accent mb-1">Go (Gin)</p>
+                      <p className="text-xs">Handles Auth, User Profiles, Tasks, and Wallet transactions. High-performance core.</p>
+                    </div>
+                    <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                      <p className="font-bold text-blue-400 mb-1">Node.js (NestJS)</p>
+                      <p className="text-xs">Handles Notifications, Peer Help, and real-time Chat systems.</p>
+                    </div>
+                    <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                      <p className="font-bold text-purple-400 mb-1">Python (FastAPI)</p>
+                      <p className="text-xs">Handles complex Data Processing, Analytics, and Prediction engines.</p>
+                    </div>
+                  </div>
+                  <p className="mt-4">
+                    All services are synchronized via shared JWT authentication and a unified database schema.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
