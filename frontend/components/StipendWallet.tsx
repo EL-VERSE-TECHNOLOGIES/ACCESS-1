@@ -26,10 +26,9 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
   };
 
   const handleWithdrawSuccess = async (pin: string) => {
-    setShowGate(false);
+    setShowGate(false); // Close the popup immediately upon success
     setIsWithdrawing(true);
     try {
-      // In this version, we withdraw the full available balance
       await api.post('/wallet/withdraw', {
         amount: balance,
         pin: pin
@@ -41,6 +40,10 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
     } finally {
       setIsWithdrawing(false);
     }
+  };
+
+  const handleWithdrawCancel = () => {
+    setShowGate(false); // Ensure the popup is removed from the DOM
   };
 
   return (
@@ -92,7 +95,7 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
           currencyFrom={currency}
           currencyTo="USD"
           onSuccess={handleWithdrawSuccess}
-          onCancel={() => setShowGate(false)}
+          onCancel={handleWithdrawCancel}
         />
       )}
     </motion.div>
