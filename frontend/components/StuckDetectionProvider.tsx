@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import useStuckDetection from '../lib/hooks/useStuckDetection';
+import { useMe } from '../lib/hooks';
 
 interface StuckDetectionContextType {
   isInactive: boolean;
@@ -11,6 +12,7 @@ interface StuckDetectionContextType {
 const StuckDetectionContext = createContext<StuckDetectionContextType | undefined>(undefined);
 
 export function StuckDetectionProvider({ children }: { children: ReactNode }) {
+  const { user } = useMe();
   const { isInactive, timeRemaining, triggerAssistance } = useStuckDetection(15); // 15 minutes timeout
   const [showStuckNotification, setShowStuckNotification] = useState(false);
 
@@ -48,7 +50,7 @@ export function StuckDetectionProvider({ children }: { children: ReactNode }) {
                   onClick={() => {
                     setShowStuckNotification(false);
                     // Trigger assistance
-                    triggerAssistance();
+                    triggerAssistance(user?.id);
                     // Open Uno AI chat
                     const bubbleButton = document.querySelector('.uno-ai-bubble-btn');
                     if (bubbleButton) {

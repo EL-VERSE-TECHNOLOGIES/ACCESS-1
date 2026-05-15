@@ -13,11 +13,11 @@ env.bak/
 venv.bak/
 
 # Builds
-/dist
+dist
 /build
-/.next
+.next
 .nuxt
-/public/dist
+/publicdist
 /out
 
 # Environment variables

@@ -81,6 +81,9 @@ func (s *UserService) CreateUser(user models.User) (*models.User, error) {
 			return nil, err
 		}
 		user.TransactionPin = string(hashedPin)
+	} else {
+		// Ensure it's not empty string if we expect 4 digits later
+		// or handle it in validation
 	}
 
 	// Generate UUID if not provided
@@ -99,7 +102,7 @@ func (s *UserService) UpdateUser(id string, updates models.User) (*models.User, 
 		return nil, errors.New("user not found")
 	}
 
-	updates.ID = id // Ensure we're updating the right user
+	// updates.ID = id // Ensure we're updating the right user
 	result = s.DB.Model(&user).Updates(updates)
 	return &user, result.Error
 }
@@ -221,6 +224,25 @@ func (s *WalletService) GetTransactions(userID string) ([]models.WalletTransacti
 	var transactions []models.WalletTransaction
 	result := s.DB.Where("user_id = ?", userID).Order("created_at DESC").Find(&transactions)
 	return transactions, result.Error
+}
+
+func (s *WalletService) VerifyTransactionPin(userID, pin string) (bool, error) {
+	var user models.User
+	result := s.DB.First(&user, "id = ?", userID)
+	if result.Error != nil {
+		return false, result.Error
+	}
+
+	if user.TransactionPin == "" {
+		return false, errors.New("transaction pin not set")
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.TransactionPin), []byte(pin))
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (s *WalletService) CreateTransaction(transaction models.WalletTransaction) (*models.WalletTransaction, error) {

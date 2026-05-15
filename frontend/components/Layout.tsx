@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { useMe } from '../lib/hooks'
 import api from '../lib/api'
 import { useRouter } from 'next/router'
-import BackendSelector from './BackendSelector'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user } = useMe()
@@ -50,7 +49,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <BackendSelector />
             {user ? (
               <>
                 <Link href="/profile" className="text-sm">{user.name || 'Me'}</Link>

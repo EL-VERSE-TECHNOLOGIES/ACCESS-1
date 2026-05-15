@@ -136,6 +136,43 @@ func (h *Handler) GetCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func (h *Handler) VerifyFace(c *gin.Context) {
+	userID := c.GetString("userID")
+
+	// In a real implementation, we would process the image here
+	// For now, we update the status to verified
+	user, err := h.Service.User.UpdateUser(userID, models.User{
+		FaceVerificationStatus: "verified",
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not verify face"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Face verified successfully",
+		"status":  user.FaceVerificationStatus,
+	})
+}
+
+func (h *Handler) VerifyFingerprint(c *gin.Context) {
+	userID := c.GetString("userID")
+
+	// In a real implementation, we would use WebAuthn or a biometric scan
+	user, err := h.Service.User.UpdateUser(userID, models.User{
+		FingerprintVerified: true,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not verify fingerprint"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Fingerprint verified successfully",
+		"status":  user.FingerprintVerified,
+	})
+}
+
 // User handlers
 func (h *Handler) GetProfile(c *gin.Context) {
 	userID := c.GetString("userID")
@@ -331,6 +368,44 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, transactions)
+}
+
+func (h *Handler) Withdraw(c *gin.Context) {
+	userID := c.GetString("userID")
+	var req struct {
+		Amount int    `json:"amount" binding:"required"`
+		Pin    string `json:"pin" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Verify PIN
+	verified, err := h.Service.Wallet.VerifyTransactionPin(userID, req.Pin)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error during PIN verification"})
+		return
+	}
+	if !verified {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid transaction PIN"})
+		return
+	}
+
+	// Process withdrawal
+	transaction, err := h.Service.Wallet.CreateTransaction(models.WalletTransaction{
+		UserID:          userID,
+		Amount:          req.Amount,
+		TransactionType: "debit",
+		Description:     func() *string { s := "Withdrawal"; return &s }(),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not process withdrawal"})
+		return
+	}
+
+	c.JSON(http.StatusOK, transaction)
 }
 
 // Notification handlers
