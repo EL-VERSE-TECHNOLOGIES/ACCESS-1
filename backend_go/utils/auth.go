@@ -10,7 +10,7 @@ var jwtSecret = []byte(func() string {
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		return secret
 	}
-	return "elaccess_secret_key_for_dev"
+	return "elaccess_shared_secret_key_2024"
 }())
 
 type Claims struct {

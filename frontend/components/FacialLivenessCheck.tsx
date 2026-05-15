@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
+import api from '../lib/api';
 
 interface FacialLivenessCheckProps {
   onSuccess: () => void;
@@ -20,13 +21,17 @@ const FacialLivenessCheck: React.FC<FacialLivenessCheckProps> = ({ onSuccess, on
         setImgSrc(imageSrc);
         setStep('processing');
         
-        // Simulate facial recognition processing
-        setTimeout(() => {
+        try {
+          // Real facial recognition processing call
+          await api.post('/auth/verify-face', { image: imageSrc });
           setStep('success');
           setTimeout(() => {
             onSuccess();
           }, 1500);
-        }, 2000);
+        } catch (error) {
+          console.error('Face verification failed:', error);
+          setStep('error');
+        }
       }
     }
   }, [onSuccess]);

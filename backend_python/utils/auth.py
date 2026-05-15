@@ -13,7 +13,7 @@ import os
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Secret key for JWT
-SECRET_KEY = os.getenv("SECRET_KEY", "elaccess_secret_key_for_dev")
+SECRET_KEY = os.getenv("SECRET_KEY", "elaccess_shared_secret_key_2024")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

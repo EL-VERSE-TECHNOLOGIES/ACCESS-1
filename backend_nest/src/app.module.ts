@@ -15,8 +15,12 @@ import { User, Task, Submission, WalletTransaction, Notification, PeerHelpReques
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
-      type: 'sqlite', // Changed to SQLite for easier development
-      database: 'elaccess.sqlite', // File-based database for persistence
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT) || 5432,
+      username: process.env.DB_USERNAME || 'user',
+      password: process.env.DB_PASSWORD || 'password',
+      database: process.env.DB_NAME || 'elaccess',
       entities: [User, Task, Submission, WalletTransaction, Notification, PeerHelpRequest, ChatMessage, DailyMultiplier],
       synchronize: true, // Note: Don't use synchronize in production
       autoLoadEntities: true,
@@ -26,7 +30,7 @@ import { User, Task, Submission, WalletTransaction, Notification, PeerHelpReques
       Notification, PeerHelpRequest, ChatMessage, DailyMultiplier
     ]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'elaccess_secret_key_for_dev',
+      secret: process.env.JWT_SECRET || 'elaccess_shared_secret_key_2024',
       signOptions: { expiresIn: '30m' },
     }),
     PassportModule,

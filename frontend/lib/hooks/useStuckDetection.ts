@@ -41,11 +41,11 @@ const useStuckDetection = (timeoutMinutes: number = 15): StuckDetectionHook => {
     }, 1000);
   };
 
-  const triggerAssistance = async () => {
+  const triggerAssistance = async (userId: string = 'unknown') => {
     try {
       // Notify backend that user is stuck
       await axios.post(`${base}/api/access/stuck-detection`, {
-        userId: 'current_user_id', // This would come from auth context
+        userId: userId,
         timestamp: new Date().toISOString(),
         reason: 'inactivity_timeout'
       }, { withCredentials: true });

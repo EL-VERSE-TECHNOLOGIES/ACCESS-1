@@ -13,13 +13,17 @@ import (
 	"backend_go/utils"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
-	// Connect to database - using SQLite for development
-	db, err := gorm.Open(sqlite.Open("elaccess.db"), &gorm.Config{})
+	// Connect to database - using PostgreSQL
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		dsn = "host=localhost user=user password=password dbname=elaccess port=5432 sslmode=disable"
+	}
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -68,6 +72,8 @@ func main() {
 			auth.POST("/logout", handler.Logout)
 			auth.POST("/register", handler.Register)
 			auth.GET("/me", validateJWT(), handler.GetCurrentUser)
+			auth.POST("/verify-face", validateJWT(), handler.VerifyFace)
+			auth.POST("/verify-fingerprint", validateJWT(), handler.VerifyFingerprint)
 		}
 
 		// Protected routes
@@ -91,6 +97,7 @@ func main() {
 			// Wallet routes (handled by Go backend)
 			protected.GET("/wallet/balance", handler.GetBalance)
 			protected.GET("/wallet/transactions", handler.GetTransactions)
+			protected.POST("/wallet/withdraw", handler.Withdraw)
 
 			// Dashboard route (handled by Go backend)
 			protected.GET("/access/dashboard", handler.GetDashboardData)

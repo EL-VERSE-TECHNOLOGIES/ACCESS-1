@@ -27,15 +27,10 @@ export const BACKEND_CONFIGS: Record<string, BackendConfig> = {
   }
 };
 
-export const DEFAULT_BACKEND = process.env.NEXT_PUBLIC_DEFAULT_BACKEND || 'python';
+export const DEFAULT_BACKEND = 'go';
 
 export function getBackendUrl(): string {
-  if (typeof window !== 'undefined') {
-    const backendType = localStorage.getItem('selectedBackend') || DEFAULT_BACKEND;
-    return BACKEND_CONFIGS[backendType]?.url || BACKEND_CONFIGS.python.url;
-  }
-  // Default to python backend when server-side rendering
-  return BACKEND_CONFIGS.python.url;
+  return BACKEND_CONFIGS.go.url;
 }
 
 export function getAvailableBackends(): BackendConfig[] {
@@ -43,18 +38,11 @@ export function getAvailableBackends(): BackendConfig[] {
 }
 
 export function setSelectedBackend(type: string): void {
-  if (typeof window !== 'undefined' && BACKEND_CONFIGS[type]) {
-    localStorage.setItem('selectedBackend', type);
-  }
+  // Manual switching disabled
 }
 
 export function getSelectedBackend(): BackendConfig {
-  if (typeof window !== 'undefined') {
-    const selectedType = localStorage.getItem('selectedBackend') || DEFAULT_BACKEND;
-    return BACKEND_CONFIGS[selectedType] || BACKEND_CONFIGS.python;
-  }
-  // Default to python backend when server-side rendering
-  return BACKEND_CONFIGS.python;
+  return BACKEND_CONFIGS.go;
 }
 
 export function getBackendUrlForService(service: 'python' | 'go' | 'nodejs'): string {

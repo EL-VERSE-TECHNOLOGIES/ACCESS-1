@@ -20,8 +20,8 @@ function getBaseURLForEndpoint(url: string): string {
   } else if (url.includes('/process-data') || url.includes('/analyze') || url.includes('/predict')) {
     return getBackendUrlForService('python') + '/api';
   } else {
-    // Default to the selected backend for other services
-    return getBackendUrl() + '/api';
+    // Default to the Go backend for core services (Auth, User, Tasks, Wallet)
+    return getBackendUrlForService('go') + '/api';
   }
 }
 
