@@ -4,7 +4,7 @@ import axios from 'axios';
 interface StuckDetectionHook {
   isInactive: boolean;
   timeRemaining: number;
-  triggerAssistance: () => void;
+  triggerAssistance: (userId?: string) => void;
 }
 
 const useStuckDetection = (timeoutMinutes: number = 15): StuckDetectionHook => {
