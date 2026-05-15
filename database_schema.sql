@@ -10,7 +10,8 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
-    face_verification_status VARCHAR(20) DEFAULT 'pending' -- none, pending, verified
+    face_verification_status VARCHAR(20) DEFAULT 'pending', -- none, pending, verified
+    internship_started_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Tasks table

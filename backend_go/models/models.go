@@ -19,6 +19,7 @@ type User struct {
 	CV                   string         `json:"cv,omitempty"` // URL or path to CV document
 	TransactionPin       string         `json:"-"` // Don't expose transaction pin in JSON
 	FingerprintVerified  bool           `json:"fingerprint_verified"` // Whether user has completed fingerprint verification
+	InternshipStartedAt  *time.Time     `json:"internship_started_at,omitempty"`
 	Tasks                []Task         `gorm:"foreignKey:CreatedBy" json:"-"`
 	Submissions          []Submission   `gorm:"foreignKey:UserID" json:"-"`
 	WalletTransactions   []WalletTransaction `gorm:"foreignKey:UserID" json:"-"`
@@ -115,6 +116,17 @@ type DailyMultiplier struct {
 	Claimed    bool      `gorm:"default:false" json:"claimed"`
 	CreatedAt  time.Time `json:"created_at"`
 	User       User      `gorm:"foreignKey:UserID" json:"-"`
+}
+
+type Internship struct {
+	ID          string   `gorm:"type:uuid;primaryKey" json:"id"`
+	Title       string   `gorm:"not null" json:"title"`
+	Description string   `gorm:"not null" json:"description"`
+	TechStack   []string `gorm:"type:text[]" json:"tech_stack"`
+	PaymentRate string   `gorm:"not null" json:"payment_rate"` // e.g. "$10/hr" or "$15/hr"
+	Type        string   `gorm:"not null" json:"type"`         // 'standard', 'coders', 'space'
+	Duration    string   `json:"duration"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 // BeforeCreate hook to set default values

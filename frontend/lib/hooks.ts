@@ -13,6 +13,7 @@ interface User {
   face_verification_status: string;
   cv?: string;
   fingerprint_verified: boolean;
+  internship_started_at?: string;
 }
 
 const fetcher = (url: string) => api.get(url).then(r => r.data)

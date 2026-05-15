@@ -566,3 +566,89 @@ func (h *Handler) HealthCheck(c *gin.Context) {
 		"service": "go-backend-core",
 	})
 }
+
+// Internship handlers
+func (h *Handler) GetInternships(c *gin.Context) {
+	// List of all tech stacks and skills as requested
+	allTechStacks := []string{
+		"Frontend (React, Next.js, Vue, Angular)",
+		"Backend (Go, Python, Node.js, Rust, Java)",
+		"Mobile (Flutter, React Native, Swift, Kotlin)",
+		"Blockchain (Solidity, Smart Contracts, Web3)",
+		"AI/ML (PyTorch, TensorFlow, Data Science)",
+		"DevOps (Docker, Kubernetes, AWS, CI/CD)",
+		"UI/UX Design (Figma, Adobe XD)",
+		"Cybersecurity",
+		"QA Engineering",
+	}
+
+	internships := []models.Internship{
+		{
+			ID:          "el-coders-id",
+			Title:       "EL CODERS",
+			Description: "Advanced development role for experienced interns. Work on core ecosystem infrastructure.",
+			TechStack:   allTechStacks,
+			PaymentRate: "$15/hr",
+			Type:        "coders",
+			Duration:    "Open Ended",
+		},
+		{
+			ID:          "el-space-id",
+			Title:       "EL SPACE",
+			Description: "Freelance arm of the EL VERSE ECOSYSTEM. Work on diverse projects across the globe.",
+			TechStack:   allTechStacks,
+			PaymentRate: "$15/hr",
+			Type:        "space",
+			Duration:    "Open Ended",
+		},
+		{
+			ID:          "active-internship-id",
+			Title:       "Active Internship",
+			Description: "Standard internship program to grow your skills within the EL VERSE ECOSYSTEM.",
+			TechStack:   allTechStacks,
+			PaymentRate: "$10/hr",
+			Type:        "standard",
+			Duration:    "6 Months",
+		},
+	}
+
+	c.JSON(http.StatusOK, internships)
+}
+
+func (h *Handler) ApplyInternship(c *gin.Context) {
+	userID := c.GetString("userID")
+	internshipID := c.Param("id")
+
+	user, err := h.Service.User.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User profile not found"})
+		return
+	}
+
+	// Logic for EL CODERS and EL SPACE - requires 6 months internship
+	if internshipID == "el-coders-id" || internshipID == "el-space-id" {
+		if user.InternshipStartedAt == nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Security Sync: You must have an active internship history to apply for this role."})
+			return
+		}
+
+		sixMonthsAgo := time.Now().AddDate(0, -6, 0)
+		if user.InternshipStartedAt.After(sixMonthsAgo) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Eligibility requirement: At least 6 months of internship experience within EL VERSE is required for this role."})
+			return
+		}
+	}
+
+	// Simulated application success
+	resp := gin.H{
+		"message": "Application synchronized and sent successfully.",
+		"status":  "applied",
+	}
+
+	// For EL SPACE, include the redirect URL
+	if internshipID == "el-space-id" {
+		resp["redirect_url"] = "https://el-space-fpa.vercel.app/"
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
