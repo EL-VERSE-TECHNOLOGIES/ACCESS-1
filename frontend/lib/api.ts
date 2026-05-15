@@ -1,5 +1,5 @@
 // lib/api.ts
-import axios, { AxiosRequestConfig } from 'axios'
+import axios from 'axios'
 import { getBackendUrl, getBackendUrlForService } from './backend-config'
 
 // Create the API instance with the default backend configuration
@@ -11,7 +11,7 @@ export const api = axios.create({
 
 export default api
 
-// Determine which backend to use based on the service
+// Determine which backend to use based on the service needed for synchronization
 function getBaseURLForEndpoint(url: string): string {
   if (url.includes('/notifications')) {
     return getBackendUrlForService('nodejs') + '/api';
@@ -29,7 +29,7 @@ function getBaseURLForEndpoint(url: string): string {
 api.interceptors.request.use(
   (config) => {
     try {
-      // Update the base URL based on the service needed
+      // Update the base URL based on the functional service needed
       if (config.url) {
         config.baseURL = getBaseURLForEndpoint(config.url);
       }
@@ -42,7 +42,7 @@ api.interceptors.request.use(
         }
       }
     } catch (e) {
-      // ignore
+      // ignore errors in interceptor
     }
     return config
   },

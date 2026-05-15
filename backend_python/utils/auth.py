@@ -12,7 +12,7 @@ import os
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Secret key for JWT
+# Shared secret key for JWT synchronization across the ecosystem
 SECRET_KEY = os.getenv("SECRET_KEY", "elaccess_shared_secret_key_2024")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -53,11 +53,12 @@ def verify_token(token: str) -> Optional[dict]:
 
 
 def get_current_user_from_token(token: str, db: Session) -> Optional[User]:
-    credentials_exception = Exception("Could not validate credentials")
+    credentials_exception = Exception("Could not validate ecosystem credentials")
     payload = verify_token(token)
     if payload is None:
         raise credentials_exception
     
+    # User ID is stored as 'user_id' in the ecosystem standard JWT
     user_id: str = payload.get("user_id")
     if user_id is None:
         raise credentials_exception

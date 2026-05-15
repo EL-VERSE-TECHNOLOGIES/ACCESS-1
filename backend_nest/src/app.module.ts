@@ -30,6 +30,7 @@ import { User, Task, Submission, WalletTransaction, Notification, PeerHelpReques
       Notification, PeerHelpRequest, ChatMessage, DailyMultiplier
     ]),
     JwtModule.register({
+      // Shared secret key for JWT synchronization across the ecosystem
       secret: process.env.JWT_SECRET || 'elaccess_shared_secret_key_2024',
       signOptions: { expiresIn: '30m' },
     }),
