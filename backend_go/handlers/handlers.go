@@ -136,6 +136,93 @@ func (h *Handler) GetCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func (h *Handler) GetCommunityUsers(c *gin.Context) {
+	var users []models.User
+	result := h.Service.DB.Find(&users)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch community"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}
+
+func (h *Handler) GetTickets(c *gin.Context) {
+	userID := c.GetString("userID")
+	tickets, err := h.Service.Support.GetTickets(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch tickets"})
+		return
+	}
+	c.JSON(http.StatusOK, tickets)
+}
+
+func (h *Handler) CreateTicket(c *gin.Context) {
+	userID := c.GetString("userID")
+	var ticket models.SupportTicket
+	if err := c.ShouldBindJSON(&ticket); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ticket.UserID = userID
+	newTicket, err := h.Service.Support.CreateTicket(ticket)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create ticket"})
+		return
+	}
+	c.JSON(http.StatusCreated, newTicket)
+}
+
+func (h *Handler) GetAllTickets(c *gin.Context) {
+	tickets, err := h.Service.Support.GetAllTickets()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch all tickets"})
+		return
+	}
+	c.JSON(http.StatusOK, tickets)
+}
+
+func (h *Handler) UpdateTicketStatus(c *gin.Context) {
+	id := c.Param("id")
+	var req struct {
+		Status string `json:"status" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ticket, err := h.Service.Support.UpdateTicketStatus(id, req.Status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update ticket"})
+		return
+	}
+	c.JSON(http.StatusOK, ticket)
+}
+
+func (h *Handler) GetActiveProjects(c *gin.Context) {
+	projects, err := h.Service.Project.GetActiveProjects()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch projects"})
+		return
+	}
+	c.JSON(http.StatusOK, projects)
+}
+
+func (h *Handler) CreateProject(c *gin.Context) {
+	userID := c.GetString("userID")
+	var project models.ActiveProject
+	if err := c.ShouldBindJSON(&project); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	project.CreatedBy = &userID
+	newProject, err := h.Service.Project.CreateProject(project)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create project"})
+		return
+	}
+	c.JSON(http.StatusCreated, newProject)
+}
+
 func (h *Handler) VerifyFace(c *gin.Context) {
 	userID := c.GetString("userID")
 
@@ -187,8 +274,10 @@ func (h *Handler) GetProfile(c *gin.Context) {
 func (h *Handler) UpdateProfile(c *gin.Context) {
 	userID := c.GetString("userID")
 	var req struct {
-		Name *string `json:"name"`
-		Tier *string `json:"tier"`
+		Name   *string   `json:"name"`
+		Tier   *string   `json:"tier"`
+		Stacks *[]string `json:"stacks"`
+		Skills *[]string `json:"skills"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -196,10 +285,21 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	user, err := h.Service.User.UpdateUser(userID, models.User{
-		Name: *req.Name,
-		Tier: *req.Tier,
-	})
+	updates := models.User{}
+	if req.Name != nil {
+		updates.Name = *req.Name
+	}
+	if req.Tier != nil {
+		updates.Tier = *req.Tier
+	}
+	if req.Stacks != nil {
+		updates.Stacks = *req.Stacks
+	}
+	if req.Skills != nil {
+		updates.Skills = *req.Skills
+	}
+
+	user, err := h.Service.User.UpdateUser(userID, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update user"})
 		return

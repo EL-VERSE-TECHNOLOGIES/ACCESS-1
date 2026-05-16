@@ -80,13 +80,24 @@ const StipendWallet: React.FC<StipendWalletProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={handleWithdrawClick}
-          disabled={isWithdrawing || balance <= 0}
-          className="w-full py-4 text-center text-dark-surface rounded-xl bg-neon-accent hover:bg-neon-accent-hover transition-all duration-300 shadow-neon font-black text-sm uppercase tracking-widest disabled:opacity-50 disabled:shadow-none"
-        >
-          {isWithdrawing ? 'Synchronizing...' : 'Withdraw Funds'}
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleWithdrawClick}
+            disabled={isWithdrawing || balance <= 0}
+            className="w-full py-4 text-center text-dark-surface rounded-xl bg-neon-accent hover:bg-neon-accent-hover transition-all duration-300 shadow-neon font-black text-sm uppercase tracking-widest disabled:opacity-50 disabled:shadow-none"
+          >
+            {isWithdrawing ? 'Synchronizing...' : 'Withdraw Funds'}
+          </button>
+
+          <a
+            href="https://checkout.korapay.com/pay/jz9dTrCxCRGCyRv"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 text-center text-white rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-all duration-300 font-black text-sm uppercase tracking-widest"
+          >
+            Fund Wallet
+          </a>
+        </div>
       </div>
 
       {showGate && (

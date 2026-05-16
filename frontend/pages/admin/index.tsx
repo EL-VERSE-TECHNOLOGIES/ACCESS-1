@@ -8,8 +8,10 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'users' | 'tasks' | 'finance'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'tasks' | 'finance' | 'tickets' | 'projects'>('users')
   const [users, setUsers] = useState<any[]>([])
+  const [tickets, setTickets] = useState<any[]>([])
+  const [projects, setProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
   const handleLogin = (e: React.FormEvent) => {
@@ -102,6 +104,18 @@ export default function AdminDashboard() {
               >
                 FINANCE
               </button>
+              <button
+                onClick={() => setActiveTab('tickets')}
+                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'tickets' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+              >
+                TICKETS
+              </button>
+              <button
+                onClick={() => setActiveTab('projects')}
+                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'projects' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+              >
+                PROJECTS
+              </button>
             </div>
           </header>
 
@@ -172,7 +186,7 @@ export default function AdminDashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'finance' && (activeTab === 'finance') && (
+            {activeTab === 'finance' && (
               <motion.div
                 key="finance"
                 initial={{ opacity: 0, x: -20 }}
@@ -195,6 +209,32 @@ export default function AdminDashboard() {
                     <p className="text-2xl font-black text-white font-mono">0</p>
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'tickets' && (
+              <motion.div
+                key="tickets"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="bg-dark-surface-variant/40 border border-slate-800 rounded-3xl p-8"
+              >
+                <h2 className="text-xl font-bold text-white uppercase italic mb-8">Support & Dispute Management</h2>
+                <p className="text-slate-400">Review and resolve ecosystem tickets.</p>
+              </motion.div>
+            )}
+
+            {activeTab === 'projects' && (
+              <motion.div
+                key="projects"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="bg-dark-surface-variant/40 border border-slate-800 rounded-3xl p-8"
+              >
+                <h2 className="text-xl font-bold text-white uppercase italic mb-8">Active Project Deployment</h2>
+                <button className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl mb-8 uppercase text-xs">Post New Project</button>
               </motion.div>
             )}
           </AnimatePresence>

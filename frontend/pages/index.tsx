@@ -68,8 +68,10 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="fixed bottom-8 text-slate-600 text-sm font-medium">
-        © 2024 EL VERSE TECHNOLOGIES. All Rights Reserved.
+      <div className="fixed bottom-8 text-slate-600 text-sm font-medium flex gap-4 items-center">
+        <span>© 2024 EL VERSE TECHNOLOGIES. All Rights Reserved.</span>
+        <span className="w-1 h-1 bg-slate-800 rounded-full"></span>
+        <Link href="/admin" className="hover:text-neon-accent transition-colors">Admin Access</Link>
       </div>
     </div>
   )
