@@ -27,6 +27,7 @@ export default function Register() {
   });
   const router = useRouter();
   const [cvUploaded, setCvUploaded] = useState<string | null>(null);
+  const [showFacialCheck, setShowFacialCheck] = useState<boolean>(false);
   const [faceVerified, setFaceVerified] = useState<boolean>(false);
   const [fingerprintVerified, setFingerprintVerified] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -37,20 +38,18 @@ export default function Register() {
     setValue('cv', url);
   };
 
-  const handleFaceVerification = () => {
+  const handleFaceVerificationSuccess = () => {
     setFaceVerified(true);
     setValue('faceVerified', true);
+    setShowFacialCheck(false); // Close the popup after success
   };
 
-  const handleCancelFaceVerification = () => {
-    setFaceVerified(false);
-    setValue('faceVerified', false);
+  const handleFaceVerificationCancel = () => {
+    setShowFacialCheck(false); // Close the popup on cancel
   };
 
   const handleFingerprintVerification = async () => {
     try {
-      // In a real app, this would trigger a native biometric prompt (WebAuthn)
-      // For this ecosystem, we simulate the biometric capture
       setFingerprintVerified(true);
       setValue('fingerprintVerified', true);
     } catch (error) {
@@ -122,35 +121,35 @@ export default function Register() {
               className="rounded-lg"
             />
           </Link>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Ecosystem Registration</h1>
-          <p className="text-text-secondary mt-2">Join EL ACCESS and secure your account with biometric ID</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight text-center uppercase italic underline decoration-neon-accent underline-offset-8">Ecosystem Enrollment</h1>
+          <p className="text-text-secondary mt-4 font-mono text-xs">Join EL ACCESS and secure your account with biometric ID</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="bg-dark-surface-variant/40 backdrop-blur-xl p-8 rounded-3xl border border-slate-800 shadow-2xl space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">First Name *</label>
+              <label className="block text-sm font-medium text-text-secondary mb-2 uppercase tracking-widest text-[10px]">First Name *</label>
               <input
                 {...register('firstName', { required: 'First name is required' })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all uppercase"
                 placeholder="JOHN"
               />
-              {errors.firstName && <p className="text-red-400 text-xs mt-1">{errors.firstName.message}</p>}
+              {errors.firstName && <p className="text-red-400 text-[10px] mt-1 font-bold">{errors.firstName.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">Last Name *</label>
+              <label className="block text-sm font-medium text-text-secondary mb-2 uppercase tracking-widest text-[10px]">Last Name *</label>
               <input
                 {...register('lastName', { required: 'Last name is required' })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all uppercase"
                 placeholder="DOE"
               />
-              {errors.lastName && <p className="text-red-400 text-xs mt-1">{errors.lastName.message}</p>}
+              {errors.lastName && <p className="text-red-400 text-[10px] mt-1 font-bold">{errors.lastName.message}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">Email Address *</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2 uppercase tracking-widest text-[10px]">Email Address *</label>
             <input
               {...register('email', {
                 required: 'Email is required',
@@ -160,14 +159,14 @@ export default function Register() {
                 }
               })}
               type="email"
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all"
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all font-mono"
               placeholder="john.doe@example.com"
             />
-            {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-red-400 text-[10px] mt-1 font-bold">{errors.email.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">Password *</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2 uppercase tracking-widest text-[10px]">Password *</label>
             <input
               {...register('password', {
                 required: 'Password is required',
@@ -180,11 +179,11 @@ export default function Register() {
               className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-neon-accent/50 focus:border-neon-accent transition-all"
               placeholder="••••••••"
             />
-            {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+            {errors.password && <p className="text-red-400 text-[10px] mt-1 font-bold">{errors.password.message}</p>}
           </div>
 
           <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-700/50">
-            <label className="block text-sm font-medium text-text-secondary mb-2">4-Digit Transaction PIN *</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2 uppercase tracking-widest text-[10px] text-center">4-Digit Transaction PIN *</label>
             <input
               onChange={handlePinChange}
               maxLength={4}
@@ -192,26 +191,26 @@ export default function Register() {
               placeholder="0000"
               type="password"
             />
-            <p className="text-slate-500 text-xs mt-2 text-center text-balance">This PIN + Biometrics will be required for all wallet transactions.</p>
+            <p className="text-slate-500 text-[10px] mt-2 text-center text-balance font-mono">This PIN + Biometrics will be required for all wallet transactions.</p>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-text-secondary">Professional CV *</label>
+            <label className="block text-sm font-medium text-text-secondary uppercase tracking-widest text-[10px]">Professional CV *</label>
             <div className="p-1 bg-slate-900 border border-slate-700 border-dashed rounded-2xl hover:border-neon-accent transition-colors">
               <UploadWidget onComplete={(mediaId) => handleCvUpload(mediaId)} />
             </div>
             {cvUploaded && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm">
+              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold uppercase tracking-tighter">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                Document Attached
+                Document Attached and Synchronized
               </div>
             )}
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <h3 className="text-sm font-black text-white flex items-center gap-2 uppercase tracking-widest italic">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-neon-accent" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 4.908-3.367 9.192-8 10.466-4.633-1.274-8-5.558-8-10.466 0-.68.056-1.35.166-2.001zm8 9.747l3.733-3.733-1.414-1.414L10 11.88l-2.319-2.319-1.414 1.414 3.733 3.733z" clipRule="evenodd" />
               </svg>
@@ -219,32 +218,45 @@ export default function Register() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-slate-900/30 border border-slate-800 rounded-2xl p-4 flex flex-col items-center text-center">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Face ID</span>
-                <FacialLivenessCheck onSuccess={handleFaceVerification} onCancel={handleCancelFaceVerification} />
-                {faceVerified && (
-                  <span className="mt-3 text-xs font-bold text-neon-accent flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    ENROLLED
-                  </span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 italic">Facial Scan Arm</span>
+                {faceVerified ? (
+                   <div className="w-full py-4 bg-emerald-500/10 border border-emerald-500/50 rounded-xl text-emerald-400 text-[10px] font-black uppercase flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                     </svg>
+                     FACE ENROLLED
+                   </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowFacialCheck(true)}
+                    className="w-full py-4 bg-slate-800 text-slate-400 border border-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:border-neon-accent hover:text-white transition-all"
+                  >
+                    START FACIAL SCAN
+                  </button>
+                )}
+                {showFacialCheck && (
+                  <FacialLivenessCheck
+                    onSuccess={handleFaceVerificationSuccess}
+                    onCancel={handleFaceVerificationCancel}
+                  />
                 )}
               </div>
 
               <div className="bg-slate-900/30 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Touch ID</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 italic">Touch ID Arm</span>
                 <button
                   type="button"
                   onClick={() => handleFingerprintVerification()}
-                  className={`w-full py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                  className={`w-full py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${
                     fingerprintVerified
-                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
                       : 'bg-slate-800 text-slate-400 border border-slate-700 hover:border-blue-500/50 hover:text-blue-400'
                   }`}
                 >
                   {fingerprintVerified ? (
                     <>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       BIO CAPTURED
@@ -253,20 +265,20 @@ export default function Register() {
                 </button>
               </div>
             </div>
-            <p className="text-[10px] text-slate-500 text-center uppercase tracking-tighter">At least one biometric required for ecosystem security</p>
+            <p className="text-[8px] text-slate-600 text-center uppercase tracking-tighter font-mono">Multi-Arm synchronization enabled: Biometrics required</p>
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-5 bg-neon-accent text-dark-surface font-black text-lg rounded-2xl hover:bg-neon-accent-hover transform active:scale-[0.98] transition-all shadow-neon ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full py-5 bg-neon-accent text-dark-surface font-black text-lg rounded-2xl hover:bg-neon-accent-hover transform active:scale-[0.98] transition-all shadow-neon uppercase tracking-tighter ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {isSubmitting ? 'CREATING SECURE ACCOUNT...' : 'COMPLETE REGISTRATION'}
+            {isSubmitting ? 'ESTABLISHING SECURE CONNECTION...' : 'CREATE SECURE ACCOUNT'}
           </button>
 
-          <p className="text-center text-text-secondary text-sm pt-4 border-t border-slate-800">
+          <p className="text-center text-text-secondary text-[10px] pt-6 border-t border-slate-800 font-bold uppercase tracking-widest">
             Already have an account? {' '}
-            <Link href="/login" className="text-neon-accent font-bold hover:underline">Sign In</Link>
+            <Link href="/login" className="text-neon-accent hover:underline decoration-2">Sign In Terminal</Link>
           </p>
         </form>
       </div>

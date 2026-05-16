@@ -647,7 +647,7 @@ func (h *Handler) ApplyInternship(c *gin.Context) {
 
 	// For EL SPACE, include the redirect URL
 	if internshipID == "el-space-id" {
-		resp["redirect_url"] = "https://el-space-fpa.vercel.app/"
+		resp["redirect_url"] = "https://el-space.vercel.app/"
 	}
 
 	c.JSON(http.StatusOK, resp)
