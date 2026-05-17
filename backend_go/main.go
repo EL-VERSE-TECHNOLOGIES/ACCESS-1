@@ -38,6 +38,8 @@ func main() {
 		&models.PeerHelpRequest{},
 		&models.ChatMessage{},
 		&models.DailyMultiplier{},
+		&models.SupportTicket{},
+		&models.ActiveProject{},
 	)
 
 	// Initialize services
@@ -103,6 +105,21 @@ func main() {
 			protected.GET("/access/dashboard", handler.GetDashboardData)
 			protected.GET("/access/internships", handler.GetInternships)
 			protected.POST("/access/internships/:id/apply", handler.ApplyInternship)
+
+			// Support routes
+			protected.GET("/support/tickets", handler.GetTickets)
+			protected.POST("/support/tickets", handler.CreateTicket)
+
+			// Community routes
+			protected.GET("/community/users", handler.GetCommunityUsers)
+
+			// Project routes
+			protected.GET("/projects/active", handler.GetActiveProjects)
+
+			// Admin only routes (Ideally would have an admin check middleware)
+			protected.GET("/admin/tickets", handler.GetAllTickets)
+			protected.PUT("/admin/tickets/:id", handler.UpdateTicketStatus)
+			protected.POST("/admin/projects", handler.CreateProject)
 
 			// Notification routes (redirected to NodeJS backend)
 			protected.GET("/notifications", func(c *gin.Context) {

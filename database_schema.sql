@@ -11,7 +11,9 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
     face_verification_status VARCHAR(20) DEFAULT 'pending', -- none, pending, verified
-    internship_started_at TIMESTAMP WITH TIME ZONE
+    internship_started_at TIMESTAMP WITH TIME ZONE,
+    stacks TEXT[], -- array of technology stacks
+    skills TEXT[]  -- array of professional skills
 );
 
 -- Tasks table
@@ -113,3 +115,31 @@ CREATE INDEX idx_peer_help_requests_user_id ON peer_help_requests(user_id);
 CREATE INDEX idx_peer_help_requests_helper_id ON peer_help_requests(helper_id);
 CREATE INDEX idx_chat_messages_sender_receiver ON chat_messages(sender_id, receiver_id);
 CREATE INDEX idx_daily_multipliers_user_date ON daily_multipliers(user_id, date);
+
+-- Support Tickets table (Support and Dispute system)
+CREATE TABLE support_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'open', -- open, in_review, resolved, closed
+    type VARCHAR(20) NOT NULL DEFAULT 'support', -- support, dispute
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Active Projects table (Posted by Admin)
+CREATE TABLE active_projects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    stack TEXT[], -- required stack
+    budget VARCHAR(100),
+    status VARCHAR(20) NOT NULL DEFAULT 'active', -- active, completed, cancelled
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_support_tickets_user_id ON support_tickets(user_id);
+CREATE INDEX idx_active_projects_status ON active_projects(status);

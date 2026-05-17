@@ -18,6 +18,8 @@ type Service struct {
 	Notification *NotificationService
 	PeerHelp *PeerHelpService
 	Chat   *ChatService
+	Support *SupportService
+	Project *ProjectService
 }
 
 func NewService(db *gorm.DB) *Service {
@@ -30,6 +32,8 @@ func NewService(db *gorm.DB) *Service {
 	service.Notification = &NotificationService{DB: db}
 	service.PeerHelp = &PeerHelpService{DB: db}
 	service.Chat = &ChatService{DB: db}
+	service.Support = &SupportService{DB: db}
+	service.Project = &ProjectService{DB: db}
 	return service
 }
 
@@ -355,4 +359,65 @@ func (s *ChatService) SendMessage(message models.ChatMessage) (*models.ChatMessa
 	
 	result := s.DB.Create(&message)
 	return &message, result.Error
+}
+
+// Support Service
+type SupportService struct {
+	DB *gorm.DB
+}
+
+func (s *SupportService) CreateTicket(ticket models.SupportTicket) (*models.SupportTicket, error) {
+	if ticket.ID == "" {
+		ticket.ID = uuid.New().String()
+	}
+	result := s.DB.Create(&ticket)
+	return &ticket, result.Error
+}
+
+func (s *SupportService) GetTickets(userID string) ([]models.SupportTicket, error) {
+	var tickets []models.SupportTicket
+	result := s.DB.Where("user_id = ?", userID).Order("created_at DESC").Find(&tickets)
+	return tickets, result.Error
+}
+
+func (s *SupportService) GetAllTickets() ([]models.SupportTicket, error) {
+	var tickets []models.SupportTicket
+	result := s.DB.Order("created_at DESC").Find(&tickets)
+	return tickets, result.Error
+}
+
+func (s *SupportService) UpdateTicketStatus(id string, status string) (*models.SupportTicket, error) {
+	var ticket models.SupportTicket
+	result := s.DB.First(&ticket, "id = ?", id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	ticket.Status = status
+	s.DB.Save(&ticket)
+	return &ticket, nil
+}
+
+// Project Service
+type ProjectService struct {
+	DB *gorm.DB
+}
+
+func (s *ProjectService) CreateProject(project models.ActiveProject) (*models.ActiveProject, error) {
+	if project.ID == "" {
+		project.ID = uuid.New().String()
+	}
+	result := s.DB.Create(&project)
+	return &project, result.Error
+}
+
+func (s *ProjectService) GetActiveProjects() ([]models.ActiveProject, error) {
+	var projects []models.ActiveProject
+	result := s.DB.Where("status = ?", "active").Order("created_at DESC").Find(&projects)
+	return projects, result.Error
+}
+
+func (s *ProjectService) GetAllProjects() ([]models.ActiveProject, error) {
+	var projects []models.ActiveProject
+	result := s.DB.Order("created_at DESC").Find(&projects)
+	return projects, result.Error
 }

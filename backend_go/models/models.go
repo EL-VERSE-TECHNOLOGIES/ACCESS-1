@@ -20,6 +20,8 @@ type User struct {
 	TransactionPin       string         `json:"-"` // Don't expose transaction pin in JSON
 	FingerprintVerified  bool           `json:"fingerprint_verified"` // Whether user has completed fingerprint verification
 	InternshipStartedAt  *time.Time     `json:"internship_started_at,omitempty"`
+	Stacks               []string       `gorm:"type:text[]" json:"stacks"`
+	Skills               []string       `gorm:"type:text[]" json:"skills"`
 	Tasks                []Task         `gorm:"foreignKey:CreatedBy" json:"-"`
 	Submissions          []Submission   `gorm:"foreignKey:UserID" json:"-"`
 	WalletTransactions   []WalletTransaction `gorm:"foreignKey:UserID" json:"-"`
@@ -127,6 +129,30 @@ type Internship struct {
 	Type        string   `gorm:"not null" json:"type"`         // 'standard', 'coders', 'space'
 	Duration    string   `json:"duration"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+type SupportTicket struct {
+	ID          string    `gorm:"type:uuid;primaryKey" json:"id"`
+	UserID      string    `gorm:"type:uuid;not null" json:"user_id"`
+	Title       string    `gorm:"not null" json:"title"`
+	Description string    `gorm:"not null" json:"description"`
+	Status      string    `gorm:"not null;default:'open'" json:"status"` // open, in_review, resolved, closed
+	Type        string    `gorm:"not null;default:'support'" json:"type"` // support, dispute
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	User        User      `gorm:"foreignKey:UserID" json:"-"`
+}
+
+type ActiveProject struct {
+	ID          string    `gorm:"type:uuid;primaryKey" json:"id"`
+	Title       string    `gorm:"not null" json:"title"`
+	Description string    `gorm:"not null" json:"description"`
+	Stack       []string  `gorm:"type:text[]" json:"stack"`
+	Budget      string    `json:"budget"`
+	Status      string    `gorm:"not null;default:'active'" json:"status"` // active, completed, cancelled
+	CreatedBy   *string   `gorm:"type:uuid" json:"created_by"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // BeforeCreate hook to set default values
