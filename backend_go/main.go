@@ -40,6 +40,7 @@ func main() {
 		&models.DailyMultiplier{},
 		&models.SupportTicket{},
 		&models.ActiveProject{},
+		&models.Internship{},
 	)
 
 	// Initialize services
