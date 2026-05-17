@@ -309,10 +309,20 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 }
 
 func (h *Handler) GetLeaderboard(c *gin.Context) {
-	leaderboard := []map[string]interface{}{
-		{"rank": 1, "name": "JOHN DOE", "tier": "Management", "score": 1500},
-		{"rank": 2, "name": "JANE SMITH", "tier": "Lead", "score": 1200},
-		{"rank": 3, "name": "BOB JOHNSON", "tier": "Intern", "score": 900},
+	var users []models.User
+	h.Service.DB.Order("id ASC").Limit(10).Find(&users) // In a real app we'd order by points/performance
+
+	leaderboard := make([]map[string]interface{}, 0)
+	for i, u := range users {
+		leaderboard = append(leaderboard, map[string]interface{}{
+			"rank":            i + 1,
+			"name":            u.Name,
+			"tier":            u.Tier,
+			"points":          1000 - (i * 100), // Simulated points based on rank for now
+			"tasksCompleted":  10 - i,
+			"streak":          i + 1,
+			"avatar":          fmt.Sprintf("https://ui-avatars.com/api/?name=%s&background=random", u.Name),
+		})
 	}
 
 	c.JSON(http.StatusOK, leaderboard)
@@ -669,47 +679,53 @@ func (h *Handler) HealthCheck(c *gin.Context) {
 
 // Internship handlers
 func (h *Handler) GetInternships(c *gin.Context) {
-	// List of all tech stacks and skills as requested
-	allTechStacks := []string{
-		"Frontend (React, Next.js, Vue, Angular)",
-		"Backend (Go, Python, Node.js, Rust, Java)",
-		"Mobile (Flutter, React Native, Swift, Kotlin)",
-		"Blockchain (Solidity, Smart Contracts, Web3)",
-		"AI/ML (PyTorch, TensorFlow, Data Science)",
-		"DevOps (Docker, Kubernetes, AWS, CI/CD)",
-		"UI/UX Design (Figma, Adobe XD)",
-		"Cybersecurity",
-		"QA Engineering",
-	}
+	var internships []models.Internship
+	result := h.Service.DB.Find(&internships)
 
-	internships := []models.Internship{
-		{
-			ID:          "el-coders-id",
-			Title:       "EL CODERS",
-			Description: "Advanced development role for experienced interns. Work on core ecosystem infrastructure.",
-			TechStack:   allTechStacks,
-			PaymentRate: "$15/hr",
-			Type:        "coders",
-			Duration:    "Open Ended",
-		},
-		{
-			ID:          "el-space-id",
-			Title:       "EL SPACE",
-			Description: "Freelance arm of the EL VERSE ECOSYSTEM. Work on diverse projects across the globe.",
-			TechStack:   allTechStacks,
-			PaymentRate: "$15/hr",
-			Type:        "space",
-			Duration:    "Open Ended",
-		},
-		{
-			ID:          "active-internship-id",
-			Title:       "Active Internship",
-			Description: "Standard internship program to grow your skills within the EL VERSE ECOSYSTEM.",
-			TechStack:   allTechStacks,
-			PaymentRate: "$10/hr",
-			Type:        "standard",
-			Duration:    "6 Months",
-		},
+	if result.RowsAffected == 0 {
+		// Seed default internships if none exist
+		allTechStacks := []string{
+			"Frontend (React, Next.js, Vue, Angular)",
+			"Backend (Go, Python, Node.js, Rust, Java)",
+			"Mobile (Flutter, React Native, Swift, Kotlin)",
+			"Blockchain (Solidity, Smart Contracts, Web3)",
+			"AI/ML (PyTorch, TensorFlow, Data Science)",
+			"DevOps (Docker, Kubernetes, AWS, CI/CD)",
+			"UI/UX Design (Figma, Adobe XD)",
+			"Cybersecurity",
+			"QA Engineering",
+		}
+
+		internships = []models.Internship{
+			{
+				ID:          "el-coders-id",
+				Title:       "EL CODERS",
+				Description: "Advanced development role for experienced interns. Work on core ecosystem infrastructure.",
+				TechStack:   allTechStacks,
+				PaymentRate: "$15/hr",
+				Type:        "coders",
+				Duration:    "Open Ended",
+			},
+			{
+				ID:          "el-space-id",
+				Title:       "EL SPACE",
+				Description: "Freelance arm of the EL VERSE ECOSYSTEM. Work on diverse projects across the globe.",
+				TechStack:   allTechStacks,
+				PaymentRate: "$15/hr",
+				Type:        "space",
+				Duration:    "Open Ended",
+			},
+			{
+				ID:          "active-internship-id",
+				Title:       "Active Internship",
+				Description: "Standard internship program to grow your skills within the EL VERSE ECOSYSTEM.",
+				TechStack:   allTechStacks,
+				PaymentRate: "$10/hr",
+				Type:        "standard",
+				Duration:    "6 Months",
+			},
+		}
+		h.Service.DB.Create(&internships)
 	}
 
 	c.JSON(http.StatusOK, internships)
