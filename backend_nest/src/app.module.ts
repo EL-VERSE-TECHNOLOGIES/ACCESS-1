@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -8,12 +9,14 @@ import { JwtStrategy } from './middleware/jwt.strategy';
 import { AuthController, UserController, TaskController, SubmissionController, WalletController, NotificationController, PeerHelpController, DashboardController, HealthController } from './controllers/user.controller';
 import { SocialController } from './controllers/social.controller';
 import { User, Task, Submission, WalletTransaction, Notification, PeerHelpRequest, ChatMessage, DailyMultiplier } from './entities/user.entity';
+import { AuditLog, AuditLogSchema } from './entities/audit-log.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb+srv://supremeelyon606_db_user:mqZd5xcCdMvtVPE1@eee.osa2knp.mongodb.net/?appName=EEE'),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
@@ -29,6 +32,7 @@ import { User, Task, Submission, WalletTransaction, Notification, PeerHelpReques
       User, Task, Submission, WalletTransaction,
       Notification, PeerHelpRequest, ChatMessage, DailyMultiplier
     ]),
+    MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }]),
     JwtModule.register({
       // Shared secret key for JWT synchronization across the ecosystem
       secret: process.env.JWT_SECRET || 'elaccess_shared_secret_key_2024',

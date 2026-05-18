@@ -3,29 +3,27 @@ import api from '../../lib/api'
 import Layout from '../../components/Layout'
 import Loader from '../../components/Loader'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/router'
+import { useMe } from '../../lib/hooks'
 
 export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const { user, loading: meLoading } = useMe()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'users' | 'cv-approval' | 'tasks' | 'finance' | 'tickets' | 'projects'>('users')
   const [users, setUsers] = useState<any[]>([])
   const [pendingCVs, setPendingCVs] = useState<any[]>([])
-  const [tickets, setTickets] = useState<any[]>([])
-  const [projects, setProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password === 'Access12345@') {
-      setIsAuthenticated(true)
-      setError('')
+  const isManagementOrLead = user && (user.tier === 'Management' || user.tier === 'Lead');
+
+  useEffect(() => {
+    if (!meLoading && !isManagementOrLead) {
+      router.push('/dashboard')
+    } else if (isManagementOrLead) {
       fetchUsers()
       fetchPendingCVs()
-    } else {
-      setError('Invalid Administrative Credentials')
     }
-  }
+  }, [meLoading, isManagementOrLead])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -58,40 +56,10 @@ export default function AdminDashboard() {
     }
   }
 
-  if (!isAuthenticated) {
+  if (meLoading || !isManagementOrLead) {
     return (
-      <div className="min-h-screen bg-dark-surface flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-dark-surface-variant p-10 rounded-3xl border border-slate-800 shadow-2xl"
-        >
-          <div className="text-center mb-8">
-            <div className="inline-block p-4 bg-red-500/10 rounded-2xl mb-4 border border-red-500/20 text-red-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Admin Terminal</h1>
-            <p className="text-text-secondary text-sm mt-2 font-mono">Restricted access ecosystem arm</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="ENTER ADMIN PIN"
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 text-center text-white font-mono tracking-[0.5em] focus:outline-none focus:border-red-500 transition-all"
-              />
-            </div>
-            {error && <p className="text-red-500 text-xs text-center font-bold">{error}</p>}
-            <button className="w-full py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 uppercase tracking-widest text-xs">
-              Authorize Access
-            </button>
-          </form>
-        </motion.div>
+      <div className="min-h-screen bg-dark-surface flex items-center justify-center">
+        <Loader message="Verifying Administrative Clearance..." />
       </div>
     )
   }
@@ -106,42 +74,18 @@ export default function AdminDashboard() {
               <p className="text-text-secondary font-mono text-xs">Management & Oversight Portal v2.0</p>
             </div>
             <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('users')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'users' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-              >
-                USERS
-              </button>
-              <button
-                onClick={() => setActiveTab('cv-approval')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'cv-approval' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-              >
-                CV APPROVAL {pendingCVs.length > 0 && <span className="ml-2 bg-white text-red-600 px-1.5 py-0.5 rounded-full text-[8px]">{pendingCVs.length}</span>}
-              </button>
-              <button
-                onClick={() => setActiveTab('tasks')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'tasks' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-              >
-                SUBMISSIONS
-              </button>
-              <button
-                onClick={() => setActiveTab('finance')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'finance' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-              >
-                FINANCE
-              </button>
-              <button
-                onClick={() => setActiveTab('tickets')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'tickets' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-              >
-                TICKETS
-              </button>
-              <button
-                onClick={() => setActiveTab('projects')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'projects' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-              >
-                PROJECTS
-              </button>
+              {['users', 'cv-approval', 'tasks', 'finance', 'tickets', 'projects'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`px-6 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${activeTab === tab ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                >
+                  {tab.replace('-', ' ').toUpperCase()}
+                  {tab === 'cv-approval' && pendingCVs.length > 0 && (
+                    <span className="ml-2 bg-white text-red-600 px-1.5 py-0.5 rounded-full text-[8px]">{pendingCVs.length}</span>
+                  )}
+                </button>
+              ))}
             </div>
           </header>
 
@@ -245,7 +189,6 @@ export default function AdminDashboard() {
               </motion.div>
             )}
 
-            {/* Other tabs remain same but with updated styling if needed */}
             {activeTab === 'tasks' && (
               <motion.div
                 key="tasks"
@@ -273,11 +216,11 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center">
                     <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Total Payouts</p>
-                    <p className="text-2xl font-black text-emerald-500 font-mono">$0.00</p>
+                    <p className="text-2xl font-black text-emerald-500 font-mono">-bash.00</p>
                   </div>
                   <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center">
                     <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Active Escrow</p>
-                    <p className="text-2xl font-black text-blue-500 font-mono">$0.00</p>
+                    <p className="text-2xl font-black text-blue-500 font-mono">-bash.00</p>
                   </div>
                   <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl text-center">
                     <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">System Transactions</p>
