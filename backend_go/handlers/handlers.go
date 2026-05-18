@@ -1,11 +1,15 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"sort"
 	"time"
+
 	"backend_go/models"
 	"backend_go/services"
 	"backend_go/utils"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -309,19 +313,42 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 }
 
 func (h *Handler) GetLeaderboard(c *gin.Context) {
-	var users []models.User
-	h.Service.DB.Order("id ASC").Limit(10).Find(&users) // In a real app we'd order by points/performance
+	type Result struct {
+		ID             string
+		Name           string
+		Tier           string
+		Points         int64
+		TasksCompleted int64
+	}
+
+	var results []Result
+	// Optimize using a single query with joins and aggregations to avoid N+1 problem
+	err := h.Service.DB.Table("users").
+		Select("users.id, users.name, users.tier, "+
+			"COALESCE(SUM(CASE WHEN wallet_transactions.transaction_type = 'credit' THEN wallet_transactions.amount ELSE 0 END), 0) as points, "+
+			"COUNT(DISTINCT CASE WHEN submissions.status = 'approved' THEN submissions.id END) as tasks_completed").
+		Joins("LEFT JOIN wallet_transactions ON wallet_transactions.user_id = users.id").
+		Joins("LEFT JOIN submissions ON submissions.user_id = users.id").
+		Group("users.id").
+		Order("points DESC").
+		Limit(10).
+		Scan(&results).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch leaderboard data"})
+		return
+	}
 
 	leaderboard := make([]map[string]interface{}, 0)
-	for i, u := range users {
+	for i, r := range results {
 		leaderboard = append(leaderboard, map[string]interface{}{
 			"rank":            i + 1,
-			"name":            u.Name,
-			"tier":            u.Tier,
-			"points":          1000 - (i * 100), // Simulated points based on rank for now
-			"tasksCompleted":  10 - i,
-			"streak":          i + 1,
-			"avatar":          fmt.Sprintf("https://ui-avatars.com/api/?name=%s&background=random", u.Name),
+			"name":            r.Name,
+			"tier":            r.Tier,
+			"points":          r.Points,
+			"tasksCompleted":  r.TasksCompleted,
+			"streak":          1, // Note: Streak logic requires a dedicated table or complex window functions
+			"avatar":          fmt.Sprintf("https://ui-avatars.com/api/?name=%s&background=random", r.Name),
 		})
 	}
 
@@ -617,49 +644,81 @@ func (h *Handler) SendMessage(c *gin.Context) {
 // Dashboard handler
 func (h *Handler) GetDashboardData(c *gin.Context) {
 	userID := c.GetString("userID")
-	
+
 	user, err := h.Service.User.GetUserByID(userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
-	
+
 	hotTasks, err := h.Service.Task.GetHotTasks(5)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch hot tasks"})
 		return
 	}
-	
+
 	submissions, err := h.Service.Submission.GetSubmissionsByUser(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch submissions"})
 		return
 	}
-	
+
 	tasks, err := h.Service.Task.GetTasks("")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch tasks"})
 		return
 	}
-	
-	recentActivity := []map[string]interface{}{
-		{
-			"type":        "task_completed",
-			"title":       "Security Sync Completed",
-			"description": "Your account has been successfully synchronized with biometrics.",
-			"reward":      100,
-			"timestamp":   time.Now().Format(time.RFC3339),
-		},
-		{
-			"type":        "time_remaining",
-			"title":       "Daily login bonus available",
-			"description": "Maintain your streak for the x1.5 multiplier",
-			"timestamp":   time.Now().Add(-time.Hour * 2).Format(time.RFC3339),
-		},
+
+	// Fetch real activity from notifications
+	var notifications []models.Notification
+	h.Service.DB.Where("user_id = ?", userID).Order("created_at DESC").Limit(10).Find(&notifications)
+
+	recentActivity := make([]map[string]interface{}, 0)
+	for _, n := range notifications {
+		recentActivity = append(recentActivity, map[string]interface{}{
+			"type":        n.Type,
+			"title":       n.Title,
+			"description": n.Message,
+			"timestamp":   n.CreatedAt.Format(time.RFC3339),
+			"read":        n.IsRead,
+		})
 	}
 
+	// Add a default activity if none exist to avoid empty dashboard feel for new users
+	if len(recentActivity) == 0 {
+		recentActivity = []map[string]interface{}{
+			{
+				"type":        "info",
+				"title":       "Account Initialized",
+				"description": "Welcome to EL ACCESS. Your secure internship portal is now active.",
+				"timestamp":   user.CreatedAt.Format(time.RFC3339),
+				"read":        true,
+			},
+		}
+	}
+
+	// Calculate user stats for frontend
+	balance, _ := h.Service.Wallet.GetBalance(userID)
+	var tasksCompleted int64
+	h.Service.DB.Model(&models.Submission{}).Where("user_id = ? AND status = ?", userID, "approved").Count(&tasksCompleted)
+
 	dashboardData := map[string]interface{}{
-		"user":            user,
+		"user": map[string]interface{}{
+			"id":    user.ID,
+			"name":  user.Name,
+			"tier":  user.Tier,
+			"email": user.Email,
+			"progress": map[string]interface{}{
+				"tasksCompleted": tasksCompleted,
+				"totalTasks":     len(tasks),
+			},
+			"stipend": map[string]interface{}{
+				"balance":         balance,
+				"weeklyEarnings":  0,   // Future: calculate from weekly transactions
+				"pendingAmount":   0,   // Future: calculate from pending submissions
+				"dailyMultiplier": 1.0, // Future: fetch from daily_multipliers
+			},
+		},
 		"hot_tasks":       hotTasks,
 		"recent_activity": recentActivity,
 		"submissions":     submissions,

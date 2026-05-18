@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Favicon and Branding check', async ({ page }) => {
-  await page.goto('http://localhost:3001/');
+  await page.goto('http://localhost:3000/');
 
   // Check favicon link in head
   const favicon = await page.locator('link[rel="icon"]').getAttribute('href');
@@ -11,6 +11,6 @@ test('Favicon and Branding check', async ({ page }) => {
 });
 
 test('Login page branding', async ({ page }) => {
-  await page.goto('http://localhost:3001/login');
+  await page.goto('http://localhost:3000/login');
   await page.screenshot({ path: 'final_branding_login.png' });
 });
