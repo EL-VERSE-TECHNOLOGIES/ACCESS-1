@@ -421,3 +421,43 @@ func (s *ProjectService) GetAllProjects() ([]models.ActiveProject, error) {
 	result := s.DB.Order("created_at DESC").Find(&projects)
 	return projects, result.Error
 }
+
+func (s *Service) Seed() {
+	// Seed tasks if empty
+	var taskCount int64
+	s.DB.Model(&models.Task{}).Count(&taskCount)
+	if taskCount == 0 {
+		tasks := []models.Task{
+			{
+				ID:          uuid.New().String(),
+				Title:       "Security Sync Protocol",
+				Description: "Implement a high-performance synchronization logic for biometric data across multi-backend instances.",
+				Reward:      150,
+				Difficulty:  "gold",
+				Stack:       []string{"Go", "PostgreSQL", "Redis"},
+				Status:      "OPEN",
+			},
+			{
+				ID:          uuid.New().String(),
+				Title:       "UI Component Overhaul",
+				Description: "Refactor legacy React components to use the new Ecosystem design language and Tailwind CSS.",
+				Reward:      75,
+				Difficulty:  "silver",
+				Stack:       []string{"React", "Next.js", "Tailwind"},
+				Status:      "OPEN",
+			},
+			{
+				ID:          uuid.New().String(),
+				Title:       "API Documentation Sync",
+				Description: "Update Swagger and Postman collections to match the latest backend synchronization endpoints.",
+				Reward:      30,
+				Difficulty:  "bronze",
+				Stack:       []string{"FastAPI", "OpenAPI"},
+				Status:      "OPEN",
+			},
+		}
+		s.DB.Create(&tasks)
+	}
+
+	// Seed internships if handled in GetInternships (already has seed logic)
+}

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('Landing page has Admin Access in footer', async ({ page }) => {
   await page.goto('/');
-  const adminLink = page.locator('text=Admin Access');
+  const adminLink = page.locator('footer >> text=Admin Access');
   await expect(adminLink).toBeVisible();
 });
 

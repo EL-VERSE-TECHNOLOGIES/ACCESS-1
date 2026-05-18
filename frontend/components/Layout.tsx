@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const isManagementOrAdmin = user && (user.tier === 'Management' || user.tier === 'Lead');
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <header className="bg-dark-surface border-b border-slate-800 shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-8">
@@ -60,7 +60,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main>{children}</main>
+      <main className="flex-grow">{children}</main>
+      <footer className="bg-dark-surface border-t border-slate-800 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-slate-500 text-sm font-medium">
+            © 2024 EL VERSE TECHNOLOGIES. All Rights Reserved.
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="/support" className="text-slate-500 hover:text-neon-accent text-sm transition-colors">Support</Link>
+            <Link href="/community" className="text-slate-500 hover:text-neon-accent text-sm transition-colors">Community</Link>
+            <Link href="/admin" className="text-slate-500 hover:text-neon-accent text-sm transition-colors font-bold border-l border-slate-800 pl-6">Admin Access</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -5,7 +5,7 @@ test.use({ viewport: { width: 1280, height: 720 } });
 test('Full Branding and UI Verification', async ({ page }) => {
   // 1. Landing Page
   await page.goto('http://localhost:3000/');
-  await expect(page.locator('text=Admin Access')).toBeVisible();
+  await expect(page.locator('footer >> text=Admin Access')).toBeVisible();
   await page.screenshot({ path: 'v3_landing.png', fullPage: true });
 
   // 2. Login Page

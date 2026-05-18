@@ -45,6 +45,7 @@ func main() {
 
 	// Initialize services
 	service := services.NewService(db)
+	service.Seed() // Seed initial data
 	handler := handlers.NewHandler(service)
 
 	// Setup Gin router
