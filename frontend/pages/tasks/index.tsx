@@ -3,6 +3,8 @@ import api from '../../lib/api'
 import Link from 'next/link'
 import { useState } from 'react'
 import AuthShell from '../../components/AuthShell'
+import Loader from '../../components/Loader'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const fetcher = (url: string) => api.get(url).then(r => r.data)
 
@@ -31,8 +33,7 @@ interface TasksData {
 }
 
 export default function TaskCenter() {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || ''
-  const { data, error } = useSWR<TasksData>(base + '/api/access/tasks', fetcher)
+  const { data, error, isLoading } = useSWR<Task[]>('/tasks', fetcher)
 
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedStack, setSelectedStack] = useState<string>('all');
@@ -41,41 +42,33 @@ export default function TaskCenter() {
 
   if (error) return (
     <AuthShell>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark-surface to-slate-900 p-6">
-        <div className="bg-red-500/10 p-8 rounded-2xl border border-red-500/30 max-w-md w-full text-center transform transition-all duration-300 hover:scale-[1.02]">
-          <div className="mx-auto bg-red-500/20 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">Failed to Load Tasks</h3>
-          <p className="text-text-secondary mb-6">{error?.message || 'An unexpected error occurred'}</p>
+      <div className="min-h-screen flex items-center justify-center bg-dark-surface p-6">
+        <div className="bg-red-500/10 p-8 rounded-3xl border border-red-500/30 max-w-md w-full text-center">
+          <h3 className="text-xl font-bold text-white mb-2 uppercase">Sync Error</h3>
+          <p className="text-text-secondary mb-6">Failed to synchronize with the task repository.</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-gradient-to-r from-neon-accent to-emerald-400 text-dark-surface rounded-xl hover:from-neon-accent-hover hover:to-emerald-500 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-neon-accent/20"
+            className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-black text-xs uppercase tracking-widest"
           >
-            Retry
+            Reconnect
           </button>
         </div>
       </div>
     </AuthShell>
   );
 
-  if (!data) return (
+  if (isLoading || !data) return (
     <AuthShell>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark-surface to-slate-900 p-6">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-neon-accent mb-4"></div>
-          <p className="text-text-secondary text-lg">Loading tasks...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-dark-surface p-6">
+        <Loader size="lg" message="Synchronizing task database..." />
       </div>
     </AuthShell>
   );
 
-  const { tasks, userTier } = data;
+  const tasks = data;
 
   // Get unique stacks for filter
-  const allStacks = Array.from(new Set(tasks.flatMap(task => task.stack)));
+  const allStacks = Array.from(new Set(tasks.flatMap(task => task.stack || [])));
 
   // Sort tasks based on selected criteria
   const sortedTasks = [...tasks].sort((a, b) => {
@@ -85,14 +78,14 @@ export default function TaskCenter() {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     } else if (sortBy === 'difficulty') {
       const difficultyOrder = { 'gold': 3, 'silver': 2, 'bronze': 1 };
-      return difficultyOrder[b.difficulty] - difficultyOrder[a.difficulty];
+      return (difficultyOrder[b.difficulty] || 0) - (difficultyOrder[a.difficulty] || 0);
     }
     return 0;
   });
 
   // Filter tasks based on selected stack and search query
   const filteredTasks = sortedTasks.filter(task => {
-    const matchesStack = selectedStack === 'all' || task.stack.includes(selectedStack);
+    const matchesStack = selectedStack === 'all' || (task.stack && task.stack.includes(selectedStack));
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           task.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStack && matchesSearch;
@@ -106,128 +99,75 @@ export default function TaskCenter() {
     'DONE': filteredTasks.filter(task => task.status === 'DONE')
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'bronze':
-        return 'bg-gradient-to-br from-amber-600 to-amber-700';
-      case 'silver':
-        return 'bg-gradient-to-br from-gray-400 to-gray-500';
-      case 'gold':
-        return 'bg-gradient-to-br from-yellow-500 to-yellow-600';
-      default:
-        return 'bg-gradient-to-br from-slate-500 to-slate-600';
-    }
-  };
-
-  const getStatusColor = (status: TaskStatus) => {
-    switch (status) {
-      case 'OPEN':
-        return 'bg-gradient-to-br from-slate-600 to-slate-700';
-      case 'IN_PROGRESS':
-        return 'bg-gradient-to-br from-blue-600 to-blue-700';
-      case 'REVIEW':
-        return 'bg-gradient-to-br from-yellow-600 to-yellow-700';
-      case 'DONE':
-        return 'bg-gradient-to-br from-green-600 to-green-700';
-      default:
-        return 'bg-gradient-to-br from-slate-500 to-slate-600';
-    }
-  };
-
   const handleClaimTask = async (taskId: string) => {
     try {
-      await api.post(`/access/tasks/${taskId}/claim`);
-      // Refresh the data after claiming
-      window.location.reload(); // Simple refresh for now
+      await api.post(`/tasks/${taskId}/claim`);
+      window.location.reload();
     } catch (err) {
       console.error('Failed to claim task:', err);
-      alert('Failed to claim task. Please try again.');
+      alert('Task synchronization failed. Access may be restricted.');
     }
   };
 
   return (
     <AuthShell>
-      <div className="min-h-screen bg-gradient-to-br from-dark-surface to-slate-900 relative overflow-hidden">
-        {/* Animated Background Elements */}
+      <div className="min-h-screen bg-dark-surface relative overflow-hidden">
+        {/* Animated Background */}
         <div className="fixed inset-0 overflow-hidden -z-10">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-accent/5 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-          {/* Header Section */}
-          <header className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <header className="mb-12">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-text-secondary bg-clip-text text-transparent mb-2">
-                  Task Center
+                <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">
+                  Task <span className="text-neon-accent">Repository</span>
                 </h1>
-                <p className="text-text-secondary">Browse and claim micro-gigs with instant pay</p>
+                <p className="text-text-secondary font-mono text-xs mt-2 uppercase tracking-widest">
+                  Browse micro-gigs and contribute to the ecosystem
+                </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search tasks..."
+                    placeholder="SEARCH PROTOCOLS..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-slate-800/70 text-white rounded-xl pl-10 pr-4 py-2.5 w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-neon-accent/50 backdrop-blur-sm border border-slate-700/50"
+                    className="bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 w-full md:w-64 focus:outline-none focus:border-neon-accent text-white font-mono text-xs transition-all"
                   />
-                  <svg
-                    className="w-5 h-5 text-text-secondary absolute left-3 top-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                  <svg className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
 
                 <select
                   value={selectedStack}
                   onChange={(e) => setSelectedStack(e.target.value)}
-                  className="bg-slate-800/70 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-neon-accent/50 backdrop-blur-sm border border-slate-700/50"
+                  className="bg-slate-900 border border-slate-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-accent font-mono text-[10px] uppercase tracking-widest transition-all"
                 >
-                  <option value="all">All Stacks</option>
+                  <option value="all">ALL STACKS</option>
                   {allStacks.map(stack => (
-                    <option key={stack} value={stack}>{stack}</option>
+                    <option key={stack} value={stack}>{stack.toUpperCase()}</option>
                   ))}
                 </select>
 
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'reward' | 'createdAt' | 'difficulty')}
-                  className="bg-slate-800/70 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-neon-accent/50 backdrop-blur-sm border border-slate-700/50"
-                >
-                  <option value="reward">Sort by Reward</option>
-                  <option value="createdAt">Sort by Newest</option>
-                  <option value="difficulty">Sort by Difficulty</option>
-                </select>
-
-                <div className="flex bg-slate-800/70 rounded-xl p-1 backdrop-blur-sm border border-slate-700/50">
+                <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
                   <button
                     onClick={() => setViewMode('kanban')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      viewMode === 'kanban'
-                        ? 'bg-gradient-to-r from-neon-accent to-emerald-400 text-dark-surface shadow-md shadow-neon-accent/20'
-                        : 'text-text-secondary hover:text-white'
+                    className={`px-4 py-2 rounded-lg text-[10px] font-black transition-all uppercase tracking-widest ${
+                      viewMode === 'kanban' ? 'bg-neon-accent text-dark-surface shadow-neon' : 'text-slate-500 hover:text-white'
                     }`}
                   >
                     Kanban
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      viewMode === 'list'
-                        ? 'bg-gradient-to-r from-neon-accent to-emerald-400 text-dark-surface shadow-md shadow-neon-accent/20'
-                        : 'text-text-secondary hover:text-white'
+                    className={`px-4 py-2 rounded-lg text-[10px] font-black transition-all uppercase tracking-widest ${
+                      viewMode === 'list' ? 'bg-neon-accent text-dark-surface shadow-neon' : 'text-slate-500 hover:text-white'
                     }`}
                   >
                     List
@@ -237,258 +177,144 @@ export default function TaskCenter() {
             </div>
           </header>
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-text-secondary text-sm">Available</p>
-                  <p className="text-2xl font-bold text-white">{tasksByStatus.OPEN.length}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-text-secondary text-sm">In Progress</p>
-                  <p className="text-2xl font-bold text-white">{tasksByStatus.IN_PROGRESS.length}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
-              <div className="flex items-center">
-                <div className="p-2 bg-yellow-500/10 rounded-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-text-secondary text-sm">In Review</p>
-                  <p className="text-2xl font-bold text-white">{tasksByStatus.REVIEW.length}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl border border-slate-700/50 shadow-lg">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-text-secondary text-sm">Completed</p>
-                  <p className="text-2xl font-bold text-white">{tasksByStatus.DONE.length}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Task View */}
-          {viewMode === 'kanban' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* OPEN Column */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-5 border border-slate-700/50 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-white flex items-center">
-                    <span className={`w-3 h-3 rounded-full mr-2 ${getStatusColor('OPEN')}`}></span>
-                    Available
-                  </h3>
-                  <span className="bg-slate-700/50 text-text-secondary text-xs px-3 py-1.5 rounded-full">
-                    {tasksByStatus.OPEN.length}
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {tasksByStatus.OPEN.map(task => (
-                    <TaskCard key={task.id} task={task} onClaim={handleClaimTask} userTier={userTier} />
-                  ))}
-                </div>
-              </div>
-
-              {/* IN_PROGRESS Column */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-5 border border-slate-700/50 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-white flex items-center">
-                    <span className={`w-3 h-3 rounded-full mr-2 ${getStatusColor('IN_PROGRESS')}`}></span>
-                    In Progress
-                  </h3>
-                  <span className="bg-slate-700/50 text-text-secondary text-xs px-3 py-1.5 rounded-full">
-                    {tasksByStatus.IN_PROGRESS.length}
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {tasksByStatus.IN_PROGRESS.map(task => (
-                    <TaskCard key={task.id} task={task} onClaim={handleClaimTask} userTier={userTier} />
-                  ))}
-                </div>
-              </div>
-
-              {/* REVIEW Column */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-5 border border-slate-700/50 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-white flex items-center">
-                    <span className={`w-3 h-3 rounded-full mr-2 ${getStatusColor('REVIEW')}`}></span>
-                    Review
-                  </h3>
-                  <span className="bg-slate-700/50 text-text-secondary text-xs px-3 py-1.5 rounded-full">
-                    {tasksByStatus.REVIEW.length}
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {tasksByStatus.REVIEW.map(task => (
-                    <TaskCard key={task.id} task={task} onClaim={handleClaimTask} userTier={userTier} />
-                  ))}
-                </div>
-              </div>
-
-              {/* DONE Column */}
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-5 border border-slate-700/50 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-white flex items-center">
-                    <span className={`w-3 h-3 rounded-full mr-2 ${getStatusColor('DONE')}`}></span>
-                    Done
-                  </h3>
-                  <span className="bg-slate-700/50 text-text-secondary text-xs px-3 py-1.5 rounded-full">
-                    {tasksByStatus.DONE.length}
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  {tasksByStatus.DONE.map(task => (
-                    <TaskCard key={task.id} task={task} onClaim={handleClaimTask} userTier={userTier} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            // List View
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl overflow-hidden border border-slate-700/50 backdrop-blur-sm shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-800/70">
-                    <tr>
-                      <th className="text-left py-4 px-6 text-text-secondary font-medium">Task</th>
-                      <th className="text-left py-4 px-6 text-text-secondary font-medium">Difficulty</th>
-                      <th className="text-left py-4 px-6 text-text-secondary font-medium">Stack</th>
-                      <th className="text-left py-4 px-6 text-text-secondary font-medium">Reward</th>
-                      <th className="text-left py-4 px-6 text-text-secondary font-medium">Status</th>
-                      <th className="text-left py-4 px-6 text-text-secondary font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTasks.map(task => (
-                      <tr key={task.id} className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
-                        <td className="py-4 px-6">
-                          <div>
-                            <div className="font-medium text-white">{task.title}</div>
-                            <div className="text-sm text-text-secondary mt-1 line-clamp-2">{task.description}</div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(task.difficulty)} text-white`}>
-                            {task.difficulty.charAt(0).toUpperCase() + task.difficulty.slice(1)}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex flex-wrap gap-1.5">
-                            {task.stack.map((tech, idx) => (
-                              <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-slate-700 text-text-secondary">
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="font-bold text-neon-accent text-lg">+{task.reward} WTH</span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)} text-white`}>
-                            {task.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          {task.assignedTo ? (
-                            <Link href={`/tasks/${task.id}`} className="px-4 py-2 bg-gradient-to-r from-slate-700 to-slate-800 text-text-secondary rounded-lg hover:from-slate-600 hover:to-slate-700 hover:text-white transition-all duration-300 border border-slate-600 text-sm">
-                              View Task
-                            </Link>
-                          ) : (
-                            <button
-                              onClick={() => handleClaimTask(task.id)}
-                              className="px-4 py-2 bg-gradient-to-r from-neon-accent to-emerald-400 text-dark-surface rounded-lg hover:from-neon-accent-hover hover:to-emerald-500 transition-all duration-300 text-sm shadow-md shadow-neon-accent/20"
-                            >
-                              Claim Now
-                            </button>
-                          )}
-                        </td>
+          <AnimatePresence mode="wait">
+            {viewMode === 'kanban' ? (
+              <motion.div
+                key="kanban"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+              >
+                {(['OPEN', 'IN_PROGRESS', 'REVIEW', 'DONE'] as TaskStatus[]).map(status => (
+                  <div key={status} className="bg-slate-900/30 border border-slate-800/50 rounded-3xl p-5 backdrop-blur-xl">
+                    <div className="flex items-center justify-between mb-6 px-1">
+                      <h3 className="font-black text-white text-[10px] uppercase tracking-[0.2em] italic flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          status === 'OPEN' ? 'bg-blue-400' :
+                          status === 'IN_PROGRESS' ? 'bg-amber-400' :
+                          status === 'REVIEW' ? 'bg-purple-400' : 'bg-emerald-400'
+                        }`}></span>
+                        {status.replace('_', ' ')}
+                      </h3>
+                      <span className="text-[10px] font-mono text-slate-600">{tasksByStatus[status].length}</span>
+                    </div>
+                    <div className="space-y-4">
+                      {tasksByStatus[status].map(task => (
+                        <TaskCard key={task.id} task={task} onClaim={handleClaimTask} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="bg-dark-surface-variant/40 border border-slate-800 rounded-3xl overflow-hidden backdrop-blur-xl"
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-800/50 bg-slate-900/50">
+                        <th className="py-5 px-8">Protocol Name</th>
+                        <th className="py-5 px-6">Complexity</th>
+                        <th className="py-5 px-6">Tech Stack</th>
+                        <th className="py-5 px-6">Sync Reward</th>
+                        <th className="py-5 px-8 text-right">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                    </thead>
+                    <tbody>
+                      {filteredTasks.map(task => (
+                        <tr key={task.id} className="border-b border-slate-800/30 hover:bg-slate-800/20 transition-colors group">
+                          <td className="py-6 px-8">
+                            <div className="font-bold text-white group-hover:text-neon-accent transition-colors">{task.title}</div>
+                            <div className="text-xs text-text-secondary mt-1 line-clamp-1 italic">{task.description}</div>
+                          </td>
+                          <td className="py-6 px-6">
+                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded border ${
+                              task.difficulty === 'gold' ? 'border-yellow-500/50 text-yellow-500 bg-yellow-500/10' :
+                              task.difficulty === 'silver' ? 'border-slate-400/50 text-slate-400 bg-slate-400/10' :
+                              'border-amber-700/50 text-amber-700 bg-amber-700/10'
+                            }`}>
+                              {task.difficulty}
+                            </span>
+                          </td>
+                          <td className="py-6 px-6">
+                            <div className="flex gap-1.5 flex-wrap">
+                              {task.stack?.slice(0, 3).map((s, idx) => (
+                                <span key={idx} className="text-[8px] font-mono text-slate-500 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                                  {s.toUpperCase()}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="py-6 px-6 font-mono font-black text-neon-accent">+{task.reward} WTH</td>
+                          <td className="py-6 px-8 text-right">
+                            <Link
+                              href={`/tasks/${task.id}`}
+                              className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-neon-accent hover:text-dark-surface transition-all font-black text-[10px] uppercase tracking-widest"
+                            >
+                              Details
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </AuthShell>
   )
 }
 
-// Task Card Component for Kanban View
-const TaskCard = ({ task, onClaim, userTier }: { task: Task, onClaim: (id: string) => void, userTier: string }) => {
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'bronze':
-        return 'bg-gradient-to-br from-amber-600 to-amber-700';
-      case 'silver':
-        return 'bg-gradient-to-br from-gray-400 to-gray-500';
-      case 'gold':
-        return 'bg-gradient-to-br from-yellow-500 to-yellow-600';
-      default:
-        return 'bg-gradient-to-br from-slate-500 to-slate-600';
-    }
-  };
-
+const TaskCard = ({ task, onClaim }: { task: Task, onClaim: (id: string) => void }) => {
   return (
-    <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 rounded-xl p-5 cursor-pointer hover:border-neon-accent transition-all duration-300 transform hover:scale-[1.02] shadow-lg">
-      <div className="flex justify-between items-start">
-        <h4 className="font-semibold text-white text-lg">{task.title}</h4>
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(task.difficulty)} text-white`}>
-          {task.difficulty.charAt(0).toUpperCase() + task.difficulty.slice(1)}
+    <motion.div
+      layout
+      className="bg-slate-900 border border-slate-800 p-5 rounded-2xl hover:border-neon-accent transition-all group cursor-pointer"
+    >
+      <div className="flex justify-between items-start mb-4">
+        <h4 className="font-bold text-white group-hover:text-neon-accent transition-colors leading-tight">{task.title}</h4>
+        <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border ${
+          task.difficulty === 'gold' ? 'border-yellow-500/50 text-yellow-500' :
+          task.difficulty === 'silver' ? 'border-slate-400/50 text-slate-400' :
+          'border-amber-700/50 text-amber-700'
+        }`}>
+          {task.difficulty}
         </span>
       </div>
-      <p className="text-sm text-text-secondary mt-3 line-clamp-2">{task.description}</p>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {task.stack.map((tech, idx) => (
-          <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-slate-700/50 text-text-secondary border border-slate-600/50">
-            {tech}
+      <p className="text-[10px] text-text-secondary line-clamp-2 leading-relaxed mb-4 italic">
+        {task.description}
+      </p>
+      <div className="flex flex-wrap gap-1 mb-6">
+        {task.stack?.slice(0, 3).map((s, i) => (
+          <span key={i} className="text-[8px] font-mono text-slate-600 bg-slate-950 px-1.5 py-0.5 rounded">
+            {s.toUpperCase()}
           </span>
         ))}
       </div>
-
-      <div className="mt-5 flex justify-between items-center">
-        <span className="font-bold text-xl text-neon-accent">+{task.reward} WTH</span>
-        {task.assignedTo ? (
-          <span className="text-xs bg-slate-700/50 text-text-secondary px-3 py-1.5 rounded-full border border-slate-600/50">
-            Claimed
-          </span>
-        ) : (
+      <div className="flex justify-between items-center pt-4 border-t border-slate-800/50">
+        <span className="font-mono font-black text-neon-accent text-sm">+{task.reward} WTH</span>
+        {task.status === 'OPEN' ? (
           <button
-            onClick={() => onClaim(task.id)}
-            className="px-4 py-2 bg-gradient-to-r from-neon-accent to-emerald-400 text-dark-surface rounded-lg hover:from-neon-accent-hover hover:to-emerald-500 transition-all duration-300 text-sm shadow-md shadow-neon-accent/20"
+            onClick={(e) => { e.stopPropagation(); onClaim(task.id); }}
+            className="text-[10px] font-black text-white hover:text-neon-accent uppercase tracking-widest"
           >
-            Claim Now
+            Claim
           </button>
+        ) : (
+          <Link href={`/tasks/${task.id}`} className="text-[10px] font-black text-slate-500 hover:text-white uppercase tracking-widest">
+            View
+          </Link>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
