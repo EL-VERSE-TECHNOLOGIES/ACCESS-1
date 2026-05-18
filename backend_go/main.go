@@ -46,6 +46,7 @@ func main() {
 	// Initialize services
 	service := services.NewService(db)
 	service.Seed() // Seed initial data
+	utils.InitMongoDB() // Initialize MongoDB for audit logs
 	handler := handlers.NewHandler(service)
 
 	// Setup Gin router

@@ -106,13 +106,34 @@ async def update_profile(user_update: UserUpdate, token: str, db: Session = Depe
 
 @router.get("/users/leaderboard")
 async def get_leaderboard(db: Session = Depends(get_db)):
-    # This would return top users based on tasks completed or earnings
-    # For now, returning a mock response
-    return [
-        {"rank": 1, "name": "John Doe", "tier": "Management", "score": 1500},
-        {"rank": 2, "name": "Jane Smith", "tier": "Lead", "score": 1200},
-        {"rank": 3, "name": "Bob Johnson", "tier": "Intern", "score": 900}
-    ]
+    # Optimized query to fetch real leaderboard data
+    from sqlalchemy import func
+    from models.models import User, WalletTransaction, Submission
+
+    results = db.query(
+        User.id,
+        User.name,
+        User.tier,
+        func.coalesce(func.sum(func.case((WalletTransaction.transaction_type == 'credit', WalletTransaction.amount), else_=0)), 0).label('points'),
+        func.count(func.distinct(func.case((Submission.status == 'approved', Submission.id), else_=None))).label('tasks_completed')
+    ).outerjoin(WalletTransaction, WalletTransaction.user_id == User.id)\
+     .outerjoin(Submission, Submission.user_id == User.id)\
+     .group_by(User.id)\
+     .order_by(func.desc('points'))\
+     .limit(10).all()
+
+    leaderboard = []
+    for i, r in enumerate(results):
+        leaderboard.append({
+            "rank": i + 1,
+            "name": r.name,
+            "tier": r.tier,
+            "points": int(r.points),
+            "tasksCompleted": int(r.tasks_completed),
+            "streak": 1,
+            "avatar": f"https://ui-avatars.com/api/?name={r.name}&background=random"
+        })
+    return leaderboard
 
 
 @router.get("/tasks", response_model=List[Task])
@@ -315,28 +336,28 @@ async def get_dashboard_data(token: str = None, db: Session = Depends(get_db)):
     # Get all tasks
     tasks = get_tasks(db, skip=0, limit=10)
     
-    # Mock recent activity data
-    recent_activity = [
-        {
-            "type": "task_completed",
-            "title": "Fixed API endpoint bug",
-            "description": "Successfully completed the task and earned 50 WTH",
-            "reward": 50,
-            "timestamp": "2023-06-15T10:30:00Z"
-        },
-        {
-            "type": "time_remaining",
-            "title": "Daily streak bonus available",
-            "description": "Complete a task today to maintain your 5-day streak",
-            "timestamp": "2023-06-15T09:15:00Z"
-        },
-        {
-            "type": "info",
-            "title": "New task available",
-            "description": "New 'Advanced React Patterns' task added to the queue",
-            "timestamp": "2023-06-14T16:45:00Z"
-        }
-    ]
+    # Fetch real recent activity data from notifications
+    from models.models import Notification
+    notifications = db.query(Notification).filter(Notification.user_id == user.id).order_by(Notification.created_at.desc()).limit(10).all()
+
+    recent_activity = []
+    for n in notifications:
+        recent_activity.append({
+            "type": n.type or "info",
+            "title": n.title,
+            "description": n.message,
+            "timestamp": n.created_at.isoformat()
+        })
+
+    if not recent_activity:
+        recent_activity = [
+            {
+                "type": "info",
+                "title": "Account Initialized",
+                "description": "Welcome to EL ACCESS. Your secure internship portal is now active.",
+                "timestamp": user.created_at.isoformat()
+            }
+        ]
     
     # Create dashboard response
     dashboard_data = DashboardResponse(

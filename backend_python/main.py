@@ -1,11 +1,21 @@
 from fastapi import FastAPI, Depends
+from contextlib import asynccontextmanager
 from api.routers import router
 from api.data_routers import router as data_router
 from config.database import engine, Base
+from config.mongodb import check_mongo_connection
 from starlette.middleware.cors import CORSMiddleware
 
 
-app = FastAPI(title="EL ACCESS Python Backend", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: check mongo connection
+    await check_mongo_connection()
+    yield
+    # Shutdown logic if needed
+
+
+app = FastAPI(title="EL ACCESS Python Backend", version="1.0.0", lifespan=lifespan)
 
 # Import models here to register them with SQLAlchemy
 from models import models

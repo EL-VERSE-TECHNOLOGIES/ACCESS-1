@@ -1,7 +1,10 @@
 import { Injectable, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { Repository, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { User, Task, Submission, WalletTransaction, Notification, PeerHelpRequest, ChatMessage, DailyMultiplier } from '../entities/user.entity';
+import { AuditLog } from '../entities/audit-log.schema';
 import { CreateUserDto, LoginDto, TaskDto, SubmissionDto, WalletTransactionDto, NotificationDto, PeerHelpRequestDto, ChatMessageDto, UpdateUserDto, UpdateTaskDto, UpdateSubmissionDto, UpdateNotificationDto, UpdatePeerHelpRequestDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -227,6 +230,8 @@ export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
+    @InjectModel(AuditLog.name)
+    private auditLogModel: Model<AuditLog>,
   ) {}
 
   async findByUser(userId: string): Promise<Notification[]> {
@@ -239,6 +244,14 @@ export class NotificationService {
   async create(notificationDto: NotificationDto): Promise<Notification> {
     const notification = new Notification();
     Object.assign(notification, notificationDto);
+
+    // Audit Log in MongoDB
+    await new this.auditLogModel({
+      action: 'notification_created',
+      userId: notificationDto.userId,
+      details: `Notification: ${notificationDto.title}`,
+    }).save();
+
     return await this.notificationRepository.save(notification);
   }
 

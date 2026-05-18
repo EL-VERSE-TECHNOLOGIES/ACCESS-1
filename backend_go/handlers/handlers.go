@@ -48,6 +48,9 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
+	// Audit Log
+	utils.LogAudit("login", user.ID, fmt.Sprintf("User %s logged in", user.Email))
+
 	c.JSON(http.StatusOK, gin.H{
 		"access_token": token,
 		"token_type":   "bearer",
@@ -125,6 +128,9 @@ func (h *Handler) Register(c *gin.Context) {
 		CV:                   user.CV,
 		FingerprintVerified:  user.FingerprintVerified,
 	}
+
+	// Audit Log
+	utils.LogAudit("register", user.ID, fmt.Sprintf("User %s registered", user.Email))
 
 	c.JSON(http.StatusCreated, responseUser)
 }
