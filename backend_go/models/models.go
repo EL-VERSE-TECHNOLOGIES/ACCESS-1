@@ -17,6 +17,7 @@ type User struct {
 	IsActive             bool           `gorm:"default:true" json:"is_active"`
 	FaceVerificationStatus string       `gorm:"default:'pending'" json:"face_verification_status"` // none, pending, verified
 	CV                   string         `json:"cv,omitempty"` // URL or path to CV document
+	CVStatus             string         `gorm:"default:'pending'" json:"cv_status"` // pending, approved, rejected
 	TransactionPin       string         `json:"-"` // Don't expose transaction pin in JSON
 	FingerprintVerified  bool           `json:"fingerprint_verified"` // Whether user has completed fingerprint verification
 	InternshipStartedAt  *time.Time     `json:"internship_started_at,omitempty"`

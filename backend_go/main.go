@@ -88,6 +88,7 @@ func main() {
 			protected.GET("/users/profile", handler.GetProfile)
 			protected.PUT("/users/profile", handler.UpdateProfile)
 			protected.GET("/users/leaderboard", handler.GetLeaderboard)
+			protected.GET("/community/users", handler.GetCommunityUsers)
 
 			// Task routes (handled by Go backend for core functionality)
 			protected.GET("/tasks", handler.GetTasks)
@@ -118,10 +119,16 @@ func main() {
 			// Project routes
 			protected.GET("/projects/active", handler.GetActiveProjects)
 
-			// Admin only routes (Ideally would have an admin check middleware)
-			protected.GET("/admin/tickets", handler.GetAllTickets)
-			protected.PUT("/admin/tickets/:id", handler.UpdateTicketStatus)
-			protected.POST("/admin/projects", handler.CreateProject)
+			// Admin only routes
+			admin := protected.Group("/admin")
+			admin.Use(adminOnly(service))
+			{
+				admin.GET("/tickets", handler.GetAllTickets)
+				admin.PUT("/tickets/:id", handler.UpdateTicketStatus)
+				admin.POST("/projects", handler.CreateProject)
+				admin.GET("/pending-cvs", handler.GetPendingCVs)
+				admin.PUT("/approve-cv/:id", handler.ApproveCV)
+			}
 
 			// Notification routes (redirected to NodeJS backend)
 			protected.GET("/notifications", func(c *gin.Context) {
@@ -245,6 +252,27 @@ func forwardRequest(c *gin.Context, targetURL string) {
 	// Copy response body
 	responseBody, _ := io.ReadAll(resp.Body)
 	c.Data(resp.StatusCode, resp.Header.Get("Content-Type"), responseBody)
+}
+
+// Middleware to check for admin privileges
+func adminOnly(s *services.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetString("userID")
+		user, err := s.User.GetUserByID(userID)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized access: Profile not found"})
+			c.Abort()
+			return
+		}
+
+		if user.Tier != "Management" && user.Tier != "Lead" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Security Sync Violation: Administrative privileges required for this arm."})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
 }
 
 // Middleware to validate JWT
