@@ -11,6 +11,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
     face_verification_status VARCHAR(20) DEFAULT 'pending', -- none, pending, verified
+    cv_status VARCHAR(20) DEFAULT 'pending', -- pending, approved, rejected
     internship_started_at TIMESTAMP WITH TIME ZONE,
     stacks TEXT[], -- array of technology stacks
     skills TEXT[]  -- array of professional skills

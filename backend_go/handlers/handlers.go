@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"sort"
 	"time"
 
 	"backend_go/models"
@@ -97,6 +96,7 @@ func (h *Handler) Register(c *gin.Context) {
 			}
 			return "pending"
 		}(),
+		CVStatus: "pending",
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -227,11 +227,53 @@ func (h *Handler) CreateProject(c *gin.Context) {
 	c.JSON(http.StatusCreated, newProject)
 }
 
+func (h *Handler) GetPendingCVs(c *gin.Context) {
+	var users []models.User
+	result := h.Service.DB.Where("cv_status = ?", "pending").Find(&users)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch pending CVs"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}
+
+func (h *Handler) ApproveCV(c *gin.Context) {
+	id := c.Param("id")
+	var req struct {
+		Status string `json:"status" binding:"required"` // approved, rejected
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := h.Service.User.UpdateUser(id, models.User{
+		CVStatus: req.Status,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update CV status"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "CV status updated successfully", "status": req.Status})
+}
+
 func (h *Handler) VerifyFace(c *gin.Context) {
 	userID := c.GetString("userID")
 
+	user, err := h.Service.User.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found"})
+		return
+	}
+
+	if user.CVStatus != "approved" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Security Sync Blocked: CV approval by Admin is required before biometric verification."})
+		return
+	}
+
 	// Update the face verification status in the database
-	_, err := h.Service.User.UpdateUser(userID, models.User{
+	_, err = h.Service.User.UpdateUser(userID, models.User{
 		FaceVerificationStatus: "verified",
 	})
 	if err != nil {
@@ -248,8 +290,19 @@ func (h *Handler) VerifyFace(c *gin.Context) {
 func (h *Handler) VerifyFingerprint(c *gin.Context) {
 	userID := c.GetString("userID")
 
+	user, err := h.Service.User.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found"})
+		return
+	}
+
+	if user.CVStatus != "approved" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Security Sync Blocked: CV approval by Admin is required before biometric verification."})
+		return
+	}
+
 	// Update the fingerprint verification status in the database
-	_, err := h.Service.User.UpdateUser(userID, models.User{
+	_, err = h.Service.User.UpdateUser(userID, models.User{
 		FingerprintVerified: true,
 	})
 	if err != nil {
@@ -702,6 +755,27 @@ func (h *Handler) GetDashboardData(c *gin.Context) {
 	var tasksCompleted int64
 	h.Service.DB.Model(&models.Submission{}).Where("user_id = ? AND status = ?", userID, "approved").Count(&tasksCompleted)
 
+	// Calculate real weekly earnings
+	var weeklyEarnings int64
+	sevenDaysAgo := time.Now().AddDate(0, 0, -7)
+	h.Service.DB.Model(&models.WalletTransaction{}).
+		Where("user_id = ? AND transaction_type = ? AND created_at > ?", userID, "credit", sevenDaysAgo).
+		Select("COALESCE(SUM(amount), 0)").Scan(&weeklyEarnings)
+
+	// Calculate real pending amount from submissions
+	var pendingAmount int64
+	h.Service.DB.Table("submissions").
+		Joins("join tasks on tasks.id = submissions.task_id").
+		Where("submissions.user_id = ? AND submissions.status IN ?", userID, []string{"pending", "reviewing"}).
+		Select("COALESCE(SUM(tasks.reward), 0)").Scan(&pendingAmount)
+
+	// Get latest multiplier
+	var multiplier models.DailyMultiplier
+	currentMultiplier := 1.0
+	if err := h.Service.DB.Where("user_id = ? AND date = ?", userID, time.Now().Format("2006-01-02")).First(&multiplier).Error; err == nil {
+		currentMultiplier = multiplier.Multiplier
+	}
+
 	dashboardData := map[string]interface{}{
 		"user": map[string]interface{}{
 			"id":    user.ID,
@@ -714,9 +788,9 @@ func (h *Handler) GetDashboardData(c *gin.Context) {
 			},
 			"stipend": map[string]interface{}{
 				"balance":         balance,
-				"weeklyEarnings":  0,   // Future: calculate from weekly transactions
-				"pendingAmount":   0,   // Future: calculate from pending submissions
-				"dailyMultiplier": 1.0, // Future: fetch from daily_multipliers
+				"weeklyEarnings":  weeklyEarnings,
+				"pendingAmount":   pendingAmount,
+				"dailyMultiplier": currentMultiplier,
 			},
 		},
 		"hot_tasks":       hotTasks,
